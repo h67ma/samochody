@@ -10,7 +10,7 @@ def frame_time(fps, frame_n):
     minutes = int(timestamp / 60) % 60
     seconds = int(timestamp) % 60
     ms = int(( timestamp - int(timestamp) ) * 1000)
-    return (hours, minutes, seconds, ms)-
+    return (hours, minutes, seconds, ms)
 
 def split_video(in_video, out_dir, fps):
     vidcap = cv2.VideoCapture(in_video)
