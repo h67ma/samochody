@@ -28,7 +28,7 @@ for img_file in img_files:
 
 	Lcar = lread(detected_cars_labels)
 	
-	output_str = '%s' % bname
+	output_str = '%s' % bname.split('_')[1].replace('-', ':')
 
 	if Lcar:
 		for i,lcar in enumerate(Lcar):
