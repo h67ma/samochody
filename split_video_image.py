@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 import time
+import glob
 
 def frame_time(fps, frame_n):
     timestamp = frame_n / fps
@@ -41,6 +42,17 @@ def combine_video(in_dir, fps, out_video):
 
     out.release()
 
+def overlay_img(base_img_path, plat_paths):
+	base_img = cv2.imread(base_img_path)
+	offset = 0
+	for plat_path in plat_paths:
+		overlay = cv2.imread(plat_path)
+		rows, cols, _ = overlay.shape
+		base_img[0:rows+offset, 0:cols] = overlay
+		offset += rows
+
+	cv2.imwrite(base_img_path, base_img)
+
 if len(sys.argv) < 2:
     print("Pls provide input video name (with extension)")
     quit()
@@ -50,6 +62,7 @@ in_video = sys.argv[1]
 out_video = "%s_tagged.mp4" % (in_video.split('.')[0])
 timestamp_file = "%s_timestamps.csv" % (in_video.split('.')[0])
 in_dir = "tmp_in"
+trim_dir = "tmp_trim"
 out_dir = "tmp_out"
 lp_model="data/lp-detector/wpod-net_update1.h5"
 fps = get_fps(in_video)
@@ -57,31 +70,38 @@ fps = get_fps(in_video)
 if os.path.exists(in_dir):
     print("Removing old tmp files")
     shutil.rmtree(in_dir)
+    shutil.rmtree(trim_dir)
     shutil.rmtree(out_dir)
 os.mkdir(in_dir)
+os.mkdir(trim_dir)
 os.mkdir(out_dir)
 
 print("Splitting video")
 split_video(in_video, in_dir, fps)
 
 print("Processing images")
-os.system("python vehicle-detection.py %s %s" % (in_dir, out_dir))
-os.system("python license-plate-detection.py %s %s" % (out_dir, lp_model))
-os.system("python license-plate-ocr.py %s" % (out_dir))
+os.system("python vehicle-detection.py %s %s" % (in_dir, trim_dir))
+os.system("python license-plate-detection.py %s %s" % (trim_dir, lp_model))
+os.system("python license-plate-ocr.py %s" % (trim_dir))
 
 print("Generating timestamp file...")
-os.system("python gen-outputs.py %s %s > %s" % (in_dir, out_dir, timestamp_file))
+os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
 
-print("Removing excessive images")
+# move actual output images to out_dir, leave trimmed in trim_dir
+os.system("mv %s/*_output.png %s" % (trim_dir, out_dir)) # I'm too lazy to do that in python
+
+# put plates into out images
 for out_file in os.listdir(out_dir):
-	if not out_file.endswith("output.png"):
-		os.remove("%s/%s" % (out_dir, out_file))
+	platez = glob.glob("%s/%s_*car_lp.png" % (trim_dir, out_file[:-11]))
+	if len(platez) > 0:
+		overlay_img("%s/%s" % (out_dir, out_file), platez)
 
 print("Combining video")
 combine_video(out_dir, fps, out_video)
 
 print("Removing tmp files")
 shutil.rmtree(in_dir)
+shutil.rmtree(trim_dir)
 shutil.rmtree(out_dir)
 
 print("Execution time: %fs" % (time.time() - start_time))
