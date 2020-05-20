@@ -69,13 +69,13 @@ os.system("python vehicle-detection.py %s %s" % (in_dir, out_dir))
 os.system("python license-plate-detection.py %s %s" % (out_dir, lp_model))
 os.system("python license-plate-ocr.py %s" % (out_dir))
 
+print("Generating timestamp file...")
+os.system("python gen-outputs.py %s %s > %s" % (in_dir, out_dir, timestamp_file))
+
 print("Removing excessive images")
 for out_file in os.listdir(out_dir):
     if not out_file.endswith("output.png"):
         os.remove("%s/%s" % (out_dir, out_file))
-
-print("Generating timestamp file...")
-os.system("python gen-outputs.py %s %s > %s" % (in_dir, out_dir, timestamp_file))
 
 print("Combining video")
 combine_video(out_dir, fps, out_video)
