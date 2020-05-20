@@ -16,7 +16,7 @@ if __name__ == '__main__':
 		input_dir = sys.argv[1]
 		output_dir = sys.argv[2]
 
-		vehicle_threshold = .5
+		vehicle_threshold = .1
 
 		vehicle_weights = 'data/vehicle-detector/yolo-voc.weights'
 		vehicle_netcfg = 'data/vehicle-detector/yolo-voc.cfg'
@@ -40,16 +40,19 @@ if __name__ == '__main__':
 
 			detected, _ = detect(vehicle_net, vehicle_meta, img_path ,thresh=vehicle_threshold)
 
-			detected = [r for r in detected if r[0] in ['car','bus']]
-
+			cars_detected = [r for r in detected if r[0] in ['car','bus']]
 			print('\t\t%d cars found' % len(detected))
 
-			if len(detected):
+			persons_detected = [r for r in detected if r[0] in ['person']]
+			print('\t\t%d persons found' % len(persons_detected))
+
+			if len(cars_detected) or len(persons_detected):
 				Iorig = cv2.imread(img_path)
 				WH = np.array(Iorig.shape[1::-1],dtype=float)
 				Lcars = []
+				persons = []
 
-				for i,r in enumerate(detected):
+				for i,r in enumerate(cars_detected):
 					cx,cy,w,h = (np.array(r[2])/np.concatenate((WH,WH))).tolist()
 					tl = np.array([cx - w/2., cy - h/2.])
 					br = np.array([cx + w/2., cy + h/2.])
@@ -61,6 +64,20 @@ if __name__ == '__main__':
 					cv2.imwrite('%s/%s_%dcar.png' % (output_dir, bname, i), Icar)
 
 				lwrite('%s/%s_cars.txt' % (output_dir,bname), Lcars)
+
+				for i,r in enumerate(persons_detected):
+					cx,cy,w,h = (np.array(r[2])/np.concatenate((WH,WH))).tolist()
+					tl = np.array([cx - w/2., cy - h/2.])
+					br = np.array([cx + w/2., cy + h/2.])
+					label = Label(0, tl, br)
+					person_region = crop_region(Iorig,label)
+
+					persons.append(label)
+
+					cv2.imwrite('%s/%s_%dperson.png' % (output_dir, bname, i), person_region)
+
+				lwrite('%s/%s_persons.txt' % (output_dir,bname), persons)
+
 	except:
 		traceback.print_exc()
 		sys.exit(1)

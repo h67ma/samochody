@@ -12,6 +12,7 @@ from pdb import set_trace as pause
 
 YELLOW = (  0,255,255)
 RED = (  0,  0,255)
+PINKY_WINKY = (235, 52, 229)
 
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]
@@ -24,7 +25,6 @@ for img_file in img_files:
 	I = cv2.imread(img_file)
 
 	detected_cars_labels = '%s/%s_cars.txt' % (output_dir, bname)
-
 	Lcar = lread(detected_cars_labels)
 
 	sys.stdout.write('%s' % bname)
@@ -49,6 +49,12 @@ for img_file in img_files:
 					write2img(I, llp, lp_str)
 
 					sys.stdout.write(',%s' % lp_str)
+
+	detected_person_labels = '%s/%s_persons.txt' % (output_dir, bname)
+	persons = lread(detected_person_labels)
+	if persons:
+		for i,person in enumerate(persons):
+			draw_label(I, person, color=PINKY_WINKY, thickness=3)
 
 	cv2.imwrite('%s/%s_output.png' % (output_dir, bname), I)
 	sys.stdout.write('\n')
