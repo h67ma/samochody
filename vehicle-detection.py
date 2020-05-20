@@ -16,8 +16,6 @@ if __name__ == '__main__':
 		input_dir = sys.argv[1]
 		output_dir = sys.argv[2]
 
-		vehicle_threshold = .5
-
 		vehicle_weights = 'data/vehicle-detector/yolo-voc.weights'
 		vehicle_netcfg = 'data/vehicle-detector/yolo-voc.cfg'
 		vehicle_dataset = 'data/vehicle-detector/voc.data'
@@ -38,29 +36,30 @@ if __name__ == '__main__':
 
 			bname = basename(splitext(img_path)[0])
 
-			detected, _ = detect(vehicle_net, vehicle_meta, img_path ,thresh=vehicle_threshold)
+			detected, _ = detect(vehicle_net, vehicle_meta, img_path, thresh=0.5)
 
-			detected = [r for r in detected if r[0] in ['car','bus']]
+			vehicles = [r for r in detected if r[0] in ["car", "bus"]]
+			human_beans = [h for h in detected if h[0] == "person"]
 
-			print('\t\t%d cars found' % len(detected))
+			print('\t\t%d humans found, %d cars found' % (len(human_beans), len(vehicles))=
 
-			if len(detected):
+			if len(vehicles):
 				Iorig = cv2.imread(img_path)
-				WH = np.array(Iorig.shape[1::-1],dtype=float)
+				WH = np.array(Iorig.shape[1::-1], dtype=float)
 				Lcars = []
 
-				for i,r in enumerate(detected):
-					cx,cy,w,h = (np.array(r[2])/np.concatenate((WH,WH))).tolist()
+				for i, r in enumerate(vehicles):
+					cx, cy, w, h = (np.array(r[2])/np.concatenate((WH, WH))).tolist()
 					tl = np.array([cx - w/2., cy - h/2.])
 					br = np.array([cx + w/2., cy + h/2.])
 					label = Label(0, tl, br)
-					Icar = crop_region(Iorig,label)
+					Icar = crop_region(Iorig, label)
 
 					Lcars.append(label)
 
 					cv2.imwrite('%s/%s_%dcar.png' % (output_dir, bname, i), Icar)
 
-				lwrite('%s/%s_cars.txt' % (output_dir,bname), Lcars)
+				lwrite('%s/%s_cars.txt' % (output_dir, bname), Lcars)
 	except:
 		traceback.print_exc()
 		sys.exit(1)
