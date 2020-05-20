@@ -20,7 +20,7 @@ def split_video(in_video, out_dir, fps):
     
     while success:
         time = frame_time(fps, count)
-        cv2.imwrite("%s/v%02d-%02d-%02d-%04d.jpg" % (out_dir, time[0], time[1], time[2], time[3]), image)
+        cv2.imwrite("%s/%02d-%02d-%02d-%04d.jpg" % (out_dir, time[0], time[1], time[2], time[3]), image)
         success, image = vidcap.read()
         count += 1
 

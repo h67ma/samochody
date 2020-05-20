@@ -18,6 +18,7 @@ input_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
 img_files = image_files_from_folder(input_dir)
+output_str = ""
 
 for img_file in img_files:
 
@@ -29,7 +30,8 @@ for img_file in img_files:
 
 	Lcar = lread(detected_cars_labels)
 
-	sys.stdout.write('%s' % bname)
+	# sys.stdout.write('%s' % bname)
+	output_str = '%s' % bname
 
 	if Lcar:
 
@@ -52,10 +54,12 @@ for img_file in img_files:
 						lp_str = f.read().strip()
 					llp = Label(0,tl=pts.min(1),br=pts.max(1))
 					write2img(I,llp,lp_str)
-
-					sys.stdout.write(',%s' % lp_str)
+					if len(lp_str) in range(6, 8):
+						#sys.stdout.write(',%s' % lp_str)
+						output_str += ',%s' % lp_str
 
 	cv2.imwrite('%s/%s_output.png' % (output_dir,bname),I)
-	sys.stdout.write('\n')
+	if len(output_str.split(',')) > 1:
+		sys.stdout.write('%s\n' % output_str)
 
 
