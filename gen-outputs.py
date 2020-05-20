@@ -17,6 +17,7 @@ input_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
 img_files = image_files_from_folder(input_dir)
+output_str = ""
 
 for img_file in img_files:
 	bname = splitext(basename(img_file))[0]
@@ -26,8 +27,8 @@ for img_file in img_files:
 	detected_cars_labels = '%s/%s_cars.txt' % (output_dir, bname)
 
 	Lcar = lread(detected_cars_labels)
-
-	sys.stdout.write('%s' % bname)
+	
+	output_str = '%s' % bname
 
 	if Lcar:
 		for i,lcar in enumerate(Lcar):
@@ -45,10 +46,13 @@ for img_file in img_files:
 				if isfile(lp_label_str):
 					with open(lp_label_str, 'r') as f:
 						lp_str = f.read().strip()
-					llp = Label(0, tl=pts.min(1), br=pts.max(1))
-					write2img(I, llp, lp_str)
+					llp = Label(0,tl=pts.min(1),br=pts.max(1))
+					write2img(I,llp,lp_str)
+					if len(lp_str) in range(6, 8):
+						output_str += ',%s' % lp_str
 
-					sys.stdout.write(',%s' % lp_str)
+	cv2.imwrite('%s/%s_output.png' % (output_dir,bname),I)
+	if len(output_str.split(',')) > 1:
+		sys.stdout.write('%s\n' % output_str)
 
-	cv2.imwrite('%s/%s_output.png' % (output_dir, bname), I)
-	sys.stdout.write('\n')
+

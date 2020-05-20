@@ -20,7 +20,7 @@ def split_video(in_video, out_dir, fps):
     
     while success:
         time = frame_time(fps, count)
-        cv2.imwrite("%s/v%02d-%02d-%02d-%04d.jpg" % (out_dir, time[0], time[1], time[2], time[3]), image)
+        cv2.imwrite("%s/%02d-%02d-%02d-%04d.jpg" % (out_dir, time[0], time[1], time[2], time[3]), image)
         success, image = vidcap.read()
         count += 1
 
@@ -47,7 +47,8 @@ if len(sys.argv) < 2:
 
 start_time = time.time()
 in_video = sys.argv[1]
-out_video = "%s_tagged.mp4" % (in_video)
+out_video = "%s_tagged.mp4" % (in_video.split('.')[0])
+timestamp_file = "%s_timestamps.csv" % (in_video.split('.')[0])
 in_dir = "tmp_in"
 out_dir = "tmp_out"
 lp_model="data/lp-detector/wpod-net_update1.h5"
@@ -67,7 +68,9 @@ print("Processing images")
 os.system("python vehicle-detection.py %s %s" % (in_dir, out_dir))
 os.system("python license-plate-detection.py %s %s" % (out_dir, lp_model))
 os.system("python license-plate-ocr.py %s" % (out_dir))
-os.system("python gen-outputs.py %s %s > /dev/null" % (in_dir, out_dir))
+
+print("Generating timestamp file...")
+os.system("python gen-outputs.py %s %s > %s" % (in_dir, out_dir, timestamp_file))
 
 print("Removing excessive images")
 for out_file in os.listdir(out_dir):
