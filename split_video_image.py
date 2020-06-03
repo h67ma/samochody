@@ -133,8 +133,8 @@ def main():
         print('\t Processing %s' % img_path)
         bname = splitext(basename(img_path))[0]
         Ivehicle = cv2.imread(img_path)
-        img, txt = license_detection(Ivehicle, wpod_net, lp_threshold)
-        if not img:
+        img, txt, ok = license_detection(Ivehicle, wpod_net, lp_threshold)
+        if not ok:
             continue
 
         # OCR
