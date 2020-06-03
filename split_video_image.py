@@ -8,7 +8,7 @@ import glob
 import collections
 import darknet.python.darknet as dn
 from license_plate_ocr import ocr
-from license_plate_detection import licence_detection
+from license_plate_detection import license_detection
 from src.keras_utils import load_model
 
 class Overlay:
