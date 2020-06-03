@@ -3,13 +3,8 @@ import os
 import shutil
 import sys
 import time
-import glob
 import collections
-
-class Overlay:
-	def __init__(self, path, frames_left):
-		self.path = path
-		self.frames_left = frames_left
+from clusterer import add_overlays
 
 def frame_time(fps, frame_n):
     timestamp = frame_n / fps
@@ -48,26 +43,10 @@ def combine_video(in_dir, fps, out_video):
 
     out.release()
 
-def overlay_img(base_img_path, plates):
-	base_img = cv2.imread(base_img_path)
-	base_rows, _, _ = base_img.shape
-	offsety = 0
-	offsetx = 0
-	for plate in plates:
-		overlay = cv2.imread(plate.path)
-		rows, cols, _ = overlay.shape
-		base_img[offsety:rows+offsety, offsetx:cols+offsetx] = overlay
-		offsety += rows
-		if offsety >= base_rows:
-			offsety = 0
-			offsetx += cols
-	cv2.imwrite(base_img_path, base_img)
-
 if len(sys.argv) < 2:
     print("Pls provide input video name (with extension)")
     quit()
 
-overlay_remain_time = 1 # how many seconds plates remain in the image
 start_time = time.time()
 in_video = sys.argv[1]
 out_video = "%s_tagged.mp4" % (in_video.split('.')[0])
@@ -77,7 +56,6 @@ trim_dir = "tmp_trim"
 out_dir = "tmp_out"
 lp_model="data/lp-detector/wpod-net_update1.h5"
 fps = get_fps(in_video)
-overlay_remain_frames = int(overlay_remain_time * fps)
 
 if os.path.exists(in_dir):
     print("Removing old tmp files")
@@ -102,20 +80,7 @@ os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file
 # move actual output images to out_dir, leave trimmed in trim_dir
 os.system("mv %s/*_output.png %s" % (trim_dir, out_dir)) # I'm too lazy to do that in python
 
-current_overlays = []
-
-# put plates into out images
-for out_file in os.listdir(out_dir):
-	platez_paths = glob.glob("%s/%s_*car_lp.png" % (trim_dir, out_file[:-11]))
-	for plate_path in platez_paths:
-		current_overlays.append(Overlay(plate_path, overlay_remain_frames))
-
-	if len(current_overlays) > 0:
-		overlay_img("%s/%s" % (out_dir, out_file), current_overlays)
-		for overlay in current_overlays:
-			overlay.frames_left -= 1
-			if overlay.frames_left <= 0:
-				current_overlays.remove(overlay)
+add_overlays(out_dir, trim_dir, fps)
 
 print("Combining video")
 combine_video(out_dir, fps, out_video)
