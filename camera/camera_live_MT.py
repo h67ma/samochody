@@ -53,7 +53,7 @@ while fps._numFrames < args["num_frames"]:
     frame = vs.read()
     frame = imutils.resize(frame, width=400)
     # check to see if the frame should be displayed to our screen
-    if args["display"] > 0 and fps._end and fps.fps() < 30:
+    if args["display"] > 0 and fps._end and fps.fps() < args["cap"]30:
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
         fps.update()
