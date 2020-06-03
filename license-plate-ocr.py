@@ -10,6 +10,7 @@ from darknet.python.darknet import detect
 from src.label import dknet_label_conversion
 from src.utils import nms
 
+MIN_PLATE_LETTERS = 6
 
 if __name__ == '__main__':
 	try:
@@ -40,13 +41,15 @@ if __name__ == '__main__':
 				L = dknet_label_conversion(detected, width, height)
 				L = nms(L,.45)
 
-				L.sort(key=lambda x: x.tl()[0])
+				L.sort(key=lambda x: x.tl()[0])  # sort by position in image
 				lp_str = ''.join([chr(l.cl()) for l in L])
 
-				with open('%s/%s_str.txt' % (output_dir, bname),'w') as f:
-					f.write(lp_str + '\n')
-
-				print('\t\tLP: %s' % lp_str)
+				if len(lp_str) > MIN_PLATE_LETTERS:
+					with open('%s/%s_str.txt' % (output_dir, bname), 'w') as f:
+						f.write(lp_str + '\n')
+					print('\t\tLP: %s' % lp_str)
+				else:
+					print('\t\tLP too short')
 			else:
 				print('No characters found')
 	except:
