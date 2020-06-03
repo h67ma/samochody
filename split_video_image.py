@@ -1,10 +1,15 @@
 import cv2
 import os
+from os.path import basename, splitext
 import shutil
 import sys
 import time
 import glob
 import collections
+import darknet.python.darknet as dn
+from license_plate_ocr import ocr
+from license_plate_detection import licence_detection
+from src.keras_utils import load_model
 
 class Overlay:
 	def __init__(self, path, frames_left):
@@ -63,66 +68,122 @@ def overlay_img(base_img_path, plates):
 			offsetx += cols
 	cv2.imwrite(base_img_path, base_img)
 
-if len(sys.argv) < 2:
-    print("Pls provide input video name (with extension)")
-    quit()
+def main():
+    if len(sys.argv) < 2:
+        print("Pls provide input video name (with extension)")
+        quit()
 
-overlay_remain_time = 1 # how many seconds plates remain in the image
-start_time = time.time()
-in_video = sys.argv[1]
-out_video = "%s_tagged.mp4" % (in_video.split('.')[0])
-timestamp_file = "%s_timestamps.csv" % (in_video.split('.')[0])
-in_dir = "tmp_in"
-trim_dir = "tmp_trim"
-out_dir = "tmp_out"
-lp_model="data/lp-detector/wpod-net_update1.h5"
-fps = get_fps(in_video)
-overlay_remain_frames = int(overlay_remain_time * fps)
+    overlay_remain_time = 1 # how many seconds plates remain in the image
+    start_time = time.time()
+    in_video = sys.argv[1]
+    out_video = "%s_tagged.mp4" % (in_video.split('.')[0])
+    timestamp_file = "%s_timestamps.csv" % (in_video.split('.')[0])
+    in_dir = "tmp_in"
+    trim_dir = "tmp_trim"
+    out_dir = "tmp_out"
+    lp_model="data/lp-detector/wpod-net_update1.h5"
+    fps = get_fps(in_video)
+    overlay_remain_frames = int(overlay_remain_time * fps)
 
-if os.path.exists(in_dir):
-    print("Removing old tmp files")
+    if os.path.exists(in_dir):
+        print("Removing old tmp files")
+        shutil.rmtree(in_dir)
+        shutil.rmtree(trim_dir)
+        shutil.rmtree(out_dir)
+    os.mkdir(in_dir)
+    os.mkdir(trim_dir)
+    os.mkdir(out_dir)
+
+    print("Splitting video")
+    split_video(in_video, in_dir, fps)
+
+    # print("Processing images")
+    # os.system("python vehicle-detection.py %s %s" % (in_dir, trim_dir))
+    # os.system("python license-plate-detection.py %s %s" % (trim_dir, lp_model))
+    # os.system("python license-plate-ocr.py %s" % (trim_dir))
+
+    print("Processing images")
+    os.system("python vehicle-detection.py %s %s" % (in_dir, trim_dir))
+    
+
+    lp_threshold = .5
+
+    wpod_net_path = lp_model
+    wpod_net = load_model(wpod_net_path)
+
+    ocr_threshold = .4
+
+    ocr_weights = 'data/ocr/ocr-net.weights'
+    ocr_netcfg = 'data/ocr/ocr-net.cfg'
+    ocr_dataset = 'data/ocr/ocr-net.data'
+
+    ocr_net  = dn.load_net(ocr_netcfg, ocr_weights, 0)
+    ocr_meta = dn.load_meta(ocr_dataset)
+
+    images_paths = glob.glob('%s/*car.png' % trim_dir)
+
+    for img_path in images_paths:
+        #LPD
+        print('\t Processing %s' % img_path)
+        bname = splitext(basename(img_path))[0]
+        Ivehicle = cv2.imread(img_path)
+        img, txt = license_detection(Ivehicle, wpod_net, lp_threshold)
+        if not img:
+            continue
+
+        # OCR
+        print('\tScanning %s' % img_path)
+        lp_str = ocr(img, ocr_net, ocr_meta, ocr_threshold)
+        if lp_str:
+            with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
+                f.write(lp_str + '\n')
+
+
+    # # OCR
+    # images_paths = sorted(glob.glob('%s/*lp.png' % trim_dir))
+
+    
+
+    # for img_path in images_paths:
+    #     print('\tScanning %s' % img_path)
+    #     img = dn.load_image(img_path, 0, 0)
+    #     lp_str = ocr(img, ocr_net, ocr_meta, ocr_threshold)
+    #     if lp_str:
+    #         bname = basename(splitext(img_path)[0])
+    #         with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
+    #             f.write(lp_str + '\n')
+
+    # print("Generating timestamp file...")
+    # os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
+
+    # move actual output images to out_dir, leave trimmed in trim_dir
+    os.system("mv %s/*_output.png %s" % (trim_dir, out_dir)) # I'm too lazy to do that in python
+
+    current_overlays = []
+
+    # put plates into out images
+    for out_file in os.listdir(out_dir):
+        platez_paths = glob.glob("%s/%s_*car_lp.png" % (trim_dir, out_file[:-11]))
+        for plate_path in platez_paths:
+            current_overlays.append(Overlay(plate_path, overlay_remain_frames))
+
+        if len(current_overlays) > 0:
+            overlay_img("%s/%s" % (out_dir, out_file), current_overlays)
+            for overlay in current_overlays:
+                overlay.frames_left -= 1
+                if overlay.frames_left <= 0:
+                    current_overlays.remove(overlay)
+
+    print("Combining video")
+    combine_video(out_dir, fps, out_video)
+
+    print("Removing tmp files")
     shutil.rmtree(in_dir)
     shutil.rmtree(trim_dir)
     shutil.rmtree(out_dir)
-os.mkdir(in_dir)
-os.mkdir(trim_dir)
-os.mkdir(out_dir)
 
-print("Splitting video")
-split_video(in_video, in_dir, fps)
+    print("Execution time: %fs" % (time.time() - start_time))
 
-print("Processing images")
-os.system("python vehicle-detection.py %s %s" % (in_dir, trim_dir))
-os.system("python license-plate-detection.py %s %s" % (trim_dir, lp_model))
-os.system("python license-plate-ocr.py %s" % (trim_dir))
 
-print("Generating timestamp file...")
-os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
-
-# move actual output images to out_dir, leave trimmed in trim_dir
-os.system("mv %s/*_output.png %s" % (trim_dir, out_dir)) # I'm too lazy to do that in python
-
-current_overlays = []
-
-# put plates into out images
-for out_file in os.listdir(out_dir):
-	platez_paths = glob.glob("%s/%s_*car_lp.png" % (trim_dir, out_file[:-11]))
-	for plate_path in platez_paths:
-		current_overlays.append(Overlay(plate_path, overlay_remain_frames))
-
-	if len(current_overlays) > 0:
-		overlay_img("%s/%s" % (out_dir, out_file), current_overlays)
-		for overlay in current_overlays:
-			overlay.frames_left -= 1
-			if overlay.frames_left <= 0:
-				current_overlays.remove(overlay)
-
-print("Combining video")
-combine_video(out_dir, fps, out_video)
-
-print("Removing tmp files")
-shutil.rmtree(in_dir)
-shutil.rmtree(trim_dir)
-shutil.rmtree(out_dir)
-
-print("Execution time: %fs" % (time.time() - start_time))
+if __name__ == '__main__':
+    main()
