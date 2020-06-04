@@ -138,8 +138,12 @@ def main():
         # OCR
         print('\tScanning %s' % img_path)
         print("Converting CV img to darknet img")
-        img_converted = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        img_converted = dn.nparray_to_image(img_converted)
+        img_converted = dn.array_to_image(img)
+        dn.rgbgr_image(img_converted)
+        
+
+        # img_converted = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        # img_converted = dn.nparray_to_image(img_converted)
         
         lp_str = ocr(img_converted, ocr_net, ocr_meta, ocr_threshold)
         if lp_str:
