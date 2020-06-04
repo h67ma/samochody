@@ -145,10 +145,10 @@ def main():
 
         print("Sizes")
         print("C = {}\tPy = {}".format(sys.getsizeof(img_converted_C), sys.getsizeof(img_converted_py)))
-        print("C img"){
-        print("w={}\th={}\ndata={}}".format(img_converted_C.w, img_converted_C.h, img_converted_C.data))
+        print("C img")
+        print("w={}\th={}\ndata={}".format(img_converted_C.w, img_converted_C.h, img_converted_C.data))
         print("Py img")
-        print("w={}\th={}\ndata={}}".format(img_converted_py.w, img_converted_py.h, img_converted_py.data))
+        print("w={}\th={}\ndata={}".format(img_converted_py.w, img_converted_py.h, img_converted_py.data))
         print("Image converted")
 
 
