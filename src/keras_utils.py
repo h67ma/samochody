@@ -92,24 +92,46 @@ def reconstruct(Iorig, I, Y, out_size, threshold=.9):
 	
 
 def detect_lp(model, I, max_dim, net_step, out_size, threshold):
-	import ipdb; ipdb.set_trace()
+	hi = 0
+	print('HI{}'.format(hi))
+	hi += 1
 	min_dim_img = min(I.shape[:2])
 	factor = float(max_dim)/min_dim_img
+	print('HI{}'.format(hi))
+	hi += 1
 
 	w,h = (np.array(I.shape[1::-1], dtype=float)*factor).astype(int).tolist()
+	print('HI{}'.format(hi))
+	hi += 1
 	w += (w%net_step!=0)*(net_step - w%net_step)
+	print('HI{}'.format(hi))
+	hi += 1
 	h += (h%net_step!=0)*(net_step - h%net_step)
+	print('HI{}'.format(hi))
+	hi += 1
 	Iresized = cv2.resize(I, (w, h))
+	print('HI{}'.format(hi))
+	hi += 1
 
 	T = Iresized.copy()
+	print('HI{}'.format(hi))
+	hi += 1
 	T = T.reshape((1, T.shape[0], T.shape[1], T.shape[2]))
+	print('HI{}'.format(hi))
+	hi += 1
 
 	start = time.time()
 	Yr = model.predict(T)
+	print('HI{}'.format(hi))
+	hi += 1
 	Yr = np.squeeze(Yr)
+	print('HI{}'.format(hi))
+	hi += 1
 	elapsed = time.time() - start
 
 	L,TLps = reconstruct(I, Iresized, Yr, out_size, threshold)
+	print('HI{}'.format(hi))
+	hi += 1
 
 	return L,TLps,elapsed
 	
