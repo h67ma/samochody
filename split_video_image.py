@@ -140,7 +140,8 @@ def main():
         print("Converting CV img to darknet img")
         img_converted = dn.array_to_image(img)
         dn.rgbgr_image(img_converted)
-        
+        print("Image converted")
+
 
         # img_converted = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         # img_converted = dn.nparray_to_image(img_converted)
