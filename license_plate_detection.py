@@ -15,25 +15,28 @@ def adjust_pts(pts,lroi):
 	return pts*lroi.wh().reshape((2,1)) + lroi.tl().reshape((2,1))
 
 def license_detection(Ivehicle, wpod_net, lp_threshold):
-	print('Searching for license plates using WPOD-NET')
-	ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
-	side = int(ratio*288.)
-	bound_dim = min(side + (side%(2**4)), 608)
-	print("\t\tBound dim: %d, ratio: %f" % (bound_dim, ratio))
+	try:
+		print('Searching for license plates using WPOD-NET')
+		ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
+		side = int(ratio*288.)
+		bound_dim = min(side + (side%(2**4)), 608)
+		print("\t\tBound dim: %d, ratio: %f" % (bound_dim, ratio))
 
-	Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
-	if len(LlpImgs):
-		Ilp = LlpImgs[0]
-		Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
-		Ilp = cv2.cvtColor(Ilp, cv2.COLOR_GRAY2BGR)
+		Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
+		if len(LlpImgs):
+			Ilp = LlpImgs[0]
+			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
+			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_GRAY2BGR)
 
-		s = Shape(Llp[0].pts)
+			s = Shape(Llp[0].pts)
 
-		# cv2.imwrite('%s/%s_lp.png' % (output_dir, bname), Ilp*255.)
-		# writeShapes('%s/%s_lp.txt' % (output_dir, bname), [s])
-		return Ilp*255., [s], True
-	else:
-		 return None, None, False
+			# cv2.imwrite('%s/%s_lp.png' % (output_dir, bname), Ilp*255.)
+			# writeShapes('%s/%s_lp.txt' % (output_dir, bname), [s])
+			return Ilp*255., [s], True
+		else:
+			return None, None, False
+	except:
+		return None, None, False
 
 if __name__ == '__main__':
 	try:

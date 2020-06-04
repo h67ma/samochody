@@ -122,8 +122,8 @@ def main():
 
     
 
-    images_paths = glob.glob('%s/*car.png' % trim_dir).sort()
-
+    images_paths = glob.glob('%s/*car.png' % trim_dir)
+    images_paths = images_paths.sort()
     for img_path in images_paths:
         #LPD
         print('\t Processing %s' % img_path)
