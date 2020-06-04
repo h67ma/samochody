@@ -138,8 +138,17 @@ def main():
         # OCR
         print('\tScanning %s' % img_path)
         print("Converting CV img to darknet img")
-        img_converted = dn.array_to_image(img)
-        dn.rgbgr_image(img_converted)
+        img_converted_py = dn.array_to_image(img)
+        dn.rgbgr_image(img_converted_py)
+
+        img_converted_C = dn.array_to_image_C(img)
+
+        print("Sizes")
+        print("C = {}\tPy = {}".format(sys.getsizeof(img_converted_C), sys.getsizeof(img_converted_py)))
+        print("C img")
+        print(img_converted_C)
+        print("Py img")
+        print(img_converted_py)
         print("Image converted")
 
 

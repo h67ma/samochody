@@ -114,9 +114,9 @@ predict_image = lib.network_predict_image
 predict_image.argtypes = [c_void_p, IMAGE]
 predict_image.restype = POINTER(c_float)
 
-# ndarray_image = lib.ndarray_to_image
-# ndarray_image.argtypes = [POINTER(c_ubyte), POINTER(c_long), POINTER(c_long)]
-# ndarray_image.restype = IMAGE
+ndarray_image = lib.ndarray_to_image
+ndarray_image.argtypes = [POINTER(c_ubyte), POINTER(c_long), POINTER(c_long)]
+ndarray_image.restype = IMAGE
 
 def classify(net, meta, im):
     out = predict_image(net, im)
@@ -156,6 +156,11 @@ def array_to_image(arr):
     data = c_array(c_float, arr)
     im = IMAGE(w,h,c,data)
     return im
+
+def array_to_image_C(img):
+    data = img.ctypes.data_as(POINTER(c_ubyte))
+    image = ndarray_image(data, img.ctypes.shape, img.ctypes.strides)
+    return image
 
 def detect_on_image(net, meta, im, thresh=.5, hier_thresh=.5, nms=.45):
     num = c_int(0)
