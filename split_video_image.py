@@ -123,7 +123,13 @@ def main():
     
 
     images_paths = glob.glob('%s/*car.png' % trim_dir)
+    print("IMAGES_PATH")
+    print(images_path)
     images_paths = images_paths.sort()
+    print("IMAGES_PATH.SORTED()")
+    print(images_path)
+    
+    
     for img_path in images_paths:
         #LPD
         print('\t Processing %s' % img_path)
