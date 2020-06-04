@@ -29,9 +29,9 @@ def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
 		print("\t\tBound dim: %d, ratio: %f" % (bound_dim, ratio))
 		# Ivehicle float64
 		# Ivehicle2 uint8
-		Ivehicle.astype('unit8')
+		Ivehicle.astype('uint8')
 		print("Are equal now? = {}".format((Ivehicle == Ivehicle2).all()))
-		Llp, LlpImgs, _ = detect_lp(wpod_net, Ivehicle, bound_dim, 2**4, (240, 80), lp_threshold)
+		Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
 		if len(LlpImgs):
 			Ilp = LlpImgs[0]
 			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
