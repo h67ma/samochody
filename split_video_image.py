@@ -141,9 +141,15 @@ def main():
         Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold, trim_dir, file_name)
 
         for i, car_img in enumerate(Icars):
-            # LPD  
+            # LPD
+            # print('FROM RAM')
+            # print(car_img)
+            # print('FROM HDD')
+            # bname = "%s_%dcar.png" % (file_name, i)
+            # z_pliku = cv2.imread('%s/%s' % (trim_dir, bname))
+            # print(z_pliku)
             print('\t Processing %s' % bname)
-            lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold)
+            lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold, '%s/%s' % (trim_dir, bname))
             if not ok:
                 print('not ok')
                 continue

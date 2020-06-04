@@ -14,8 +14,9 @@ from src.label import Shape, writeShapes
 def adjust_pts(pts,lroi):
 	return pts*lroi.wh().reshape((2,1)) + lroi.tl().reshape((2,1))
 
-def license_detection(Ivehicle, wpod_net, lp_threshold):
+def license_detection(Ivehicle2, wpod_net, lp_threshold, img_path):
 	try:
+		Ivehicle = Ivehicle = cv2.imread(img_path)
 		print('Searching for license plates using WPOD-NET')
 		ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
 		side = int(ratio*288.)
@@ -34,6 +35,7 @@ def license_detection(Ivehicle, wpod_net, lp_threshold):
 			return None, None, False
 	except:
 		return None, None, False
+
 
 if __name__ == '__main__':
 	try:
