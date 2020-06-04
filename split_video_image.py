@@ -130,7 +130,7 @@ def main():
         print('\t Processing %s' % img_path)
         bname = splitext(basename(img_path))[0]
         Ivehicle = cv2.imread(img_path)
-        img, _, ok = license_detection(Ivehicle, wpod_net, lp_threshold)
+        img, txt, ok = license_detection(Ivehicle, wpod_net, lp_threshold)
         print('Hi6')
         if not ok:
             print('not ok')
@@ -139,14 +139,11 @@ def main():
         # OCR
         print('\tScanning %s' % img_path)
         print("Converting CV img to darknet img")
-        img_converted = dn.array_to_image(img)
+        img_converted = dn.nparray_to_image(img)
         lp_str = ocr(img_converted, ocr_net, ocr_meta, ocr_threshold)
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
                 f.write(lp_str + '\n')
-        print('Hi7')
-        del(img)
-        print('Hi8')
 
 
     # # OCR
