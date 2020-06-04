@@ -182,16 +182,6 @@ def detect_2_0(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
     free_detections(dets, num)
     return res, wh
 
-# def array_to_image(arr):
-#     arr = arr.transpose(2,0,1)
-#     c = arr.shape[0]
-#     h = arr.shape[1]
-#     w = arr.shape[2]
-#     arr = (arr/255.0).flatten()
-#     data = c_array(c_float, arr)
-#     im = IMAGE(w,h,c,data)
-#     return im
-
 # def array_to_image_C(img):
 #     data = img.ctypes.data_as(POINTER(c_ubyte))
 #     image = ndarray_image(data, img.ctypes.shape, img.ctypes.strides)
