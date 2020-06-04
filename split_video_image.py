@@ -131,7 +131,6 @@ def main():
         bname = splitext(basename(img_path))[0]
         Ivehicle = cv2.imread(img_path)
         img, txt, ok = license_detection(Ivehicle, wpod_net, lp_threshold)
-        print('Hi6')
         if not ok:
             print('not ok')
             continue
