@@ -140,7 +140,7 @@ def main():
         file_name = basename(splitext(img_path)[0])
         Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold)
 
-        for i, car_img in Icars:
+        for i, car_img in enumerate(Icars):
             # LPD
             bname = "%s_%dcar" % (file_name, i)
             print('\t Processing %s' % bname)
