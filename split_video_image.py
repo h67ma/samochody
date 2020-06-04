@@ -144,6 +144,7 @@ def main():
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
                 f.write(lp_str + '\n')
+        del(img)
 
 
     # # OCR
