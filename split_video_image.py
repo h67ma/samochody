@@ -138,7 +138,7 @@ def main():
         # VD
         print('\tScanning %s' % img_path)
         file_name = basename(splitext(img_path)[0])
-        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold)
+        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold, trim_dir)
 
         for i, car_img in enumerate(Icars):
             # LPD
@@ -147,7 +147,7 @@ def main():
 
             print(car_img)
             bname = "%s_%dcar" % (file_name, i)
-            z_pliku = cv2.imread('%s/%s_%dcar.png' % (input_dir, bname, i))
+            z_pliku = cv2.imread('%s/%s_%dcar.png' % (trim_dir, bname, i))
             print(z_pliku)
 
 
