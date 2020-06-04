@@ -36,9 +36,7 @@ def license_detection(Ivehicle, wpod_net, lp_threshold):
 			print('Hi5')
 			print(Ilp*255.)
 			print([s])
-
-			# cv2.imwrite('%s/%s_lp.png' % (output_dir, bname), Ilp*255.)
-			# writeShapes('%s/%s_lp.txt' % (output_dir, bname), [s])
+			
 			return Ilp*255., [s], True
 		else:
 			return None, None, False
