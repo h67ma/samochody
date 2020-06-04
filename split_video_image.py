@@ -9,7 +9,9 @@ import collections
 import darknet.python.darknet as dn
 from license_plate_ocr import ocr
 from license_plate_detection import license_detection
+from vehicle-detection import vehicle_detect
 from src.keras_utils import load_model
+from src.utils import image_files_from_folder
 
 class Overlay:
 	def __init__(self, path, frames_left):
@@ -103,8 +105,15 @@ def main():
     # os.system("python license-plate-ocr.py %s" % (trim_dir))
 
     print("Processing images")
-    os.system("python vehicle-detection.py %s %s" % (in_dir, trim_dir))
-    
+    vehicle_threshold = .5
+
+	vehicle_weights = 'data/vehicle-detector/yolo-voc.weights'
+	vehicle_netcfg = 'data/vehicle-detector/yolo-voc.cfg'
+	vehicle_dataset = 'data/vehicle-detector/voc.data'
+
+    print("Loading vehicle model...")
+	vehicle_net = dn.load_net(vehicle_netcfg, vehicle_weights, 0)
+	vehicle_meta = dn.load_meta(vehicle_dataset)
 
     ocr_threshold = .4
     ocr_weights = 'data/ocr/ocr-net.weights'
@@ -120,24 +129,32 @@ def main():
     print("Loading wpod model...")
     wpod_net = load_model(wpod_net_path)
 
-    images_paths = glob.glob('%s/*car.png' % trim_dir)
-    images_paths.sort() 
+    # images_paths = glob.glob('%s/*car.png' % trim_dir)
+    # images_paths.sort() 
+    images_paths = image_files_from_folder(input_dir)
+	images_paths.sort()
     
     for img_path in images_paths:
-        #LPD
-        print('\t Processing %s' % img_path)
-        bname = splitext(basename(img_path))[0]
-        Ivehicle = cv2.imread(img_path)
-        img, txt, ok = license_detection(Ivehicle, wpod_net, lp_threshold)
-        if not ok:
-            print('not ok')
-            continue
+        # VD
+        print('\tScanning %s' % img_path)
+        file_name = basename(splitext(img_path)[0])
+        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold)
 
-        # OCR        
-        lp_str = ocr(img, ocr_net, ocr_meta, ocr_threshold)
-        if lp_str:
-            with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
-                f.write(lp_str + '\n')
+        for i, car_img in Icars:
+            # LPD
+            bname = "%s_%dcar" % (file_name, i)
+            print('\t Processing %s' % bname)
+            Ivehicle = cv2.imread(car_img)
+            lp_img, txt, ok = license_detection(Ivehicle, wpod_net, lp_threshold)
+            if not ok:
+                print('not ok')
+                continue
+
+            # OCR        
+            lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
+            if lp_str:
+                with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
+                    f.write(lp_str + '\n')
 
 
     # # OCR
@@ -162,18 +179,18 @@ def main():
 
     current_overlays = []
 
-    # put plates into out images
-    for out_file in os.listdir(out_dir):
-        platez_paths = glob.glob("%s/%s_*car_lp.png" % (trim_dir, out_file[:-11]))
-        for plate_path in platez_paths:
-            current_overlays.append(Overlay(plate_path, overlay_remain_frames))
+    # # put plates into out images
+    # for out_file in os.listdir(out_dir):
+    #     platez_paths = glob.glob("%s/%s_*car_lp.png" % (trim_dir, out_file[:-11]))
+    #     for plate_path in platez_paths:
+    #         current_overlays.append(Overlay(plate_path, overlay_remain_frames))
 
-        if len(current_overlays) > 0:
-            overlay_img("%s/%s" % (out_dir, out_file), current_overlays)
-            for overlay in current_overlays:
-                overlay.frames_left -= 1
-                if overlay.frames_left <= 0:
-                    current_overlays.remove(overlay)
+    #     if len(current_overlays) > 0:
+    #         overlay_img("%s/%s" % (out_dir, out_file), current_overlays)
+    #         for overlay in current_overlays:
+    #             overlay.frames_left -= 1
+    #             if overlay.frames_left <= 0:
+    #                 current_overlays.remove(overlay)
 
     print("Combining video")
     combine_video(out_dir, fps, out_video)
