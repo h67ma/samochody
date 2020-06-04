@@ -111,16 +111,12 @@ def main():
     ocr_netcfg = 'data/ocr/ocr-net.cfg'
     ocr_dataset = 'data/ocr/ocr-net.data'
 
-    print("Sleeping befor OCR...")
-    time.sleep(2)
     print("Loading OCR model...")
     ocr_net  = dn.load_net(ocr_netcfg, ocr_weights, 0)
     ocr_meta = dn.load_meta(ocr_dataset)
 
     lp_threshold = .5
     wpod_net_path = lp_model
-    print("Sleeping before WPOD...")
-    time.sleep(2)
     print("Loading wpod model...")
     wpod_net = load_model(wpod_net_path)
 
@@ -134,6 +130,8 @@ def main():
         bname = splitext(basename(img_path))[0]
         Ivehicle = cv2.imread(img_path)
         img, txt, ok = license_detection(Ivehicle, wpod_net, lp_threshold)
+        print("IMG")
+        print(img)
         if not ok:
             continue
 
