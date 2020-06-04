@@ -140,8 +140,6 @@ def main():
         print("Converting CV img to darknet img")
         img_converted = dn.nparray_to_image(img)
         img_converted = cv2.cvtColor(img_converted, cv2.COLOR_RGB2BGR)
-        if i < 10:
-            
         lp_str = ocr(img_converted, ocr_net, ocr_meta, ocr_threshold)
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
