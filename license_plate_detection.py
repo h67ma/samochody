@@ -29,7 +29,7 @@ def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
 		print("\t\tBound dim: %d, ratio: %f" % (bound_dim, ratio))
 		# Ivehicle float64
 		# Ivehicle2 uint8
-		Ivehicle.astype('float32')/255
+		Ivehicle.astype('unit8')
 		print("Are equal now? = {}".format((Ivehicle == Ivehicle2).all()))
 		Llp, LlpImgs, _ = detect_lp(wpod_net, Ivehicle, bound_dim, 2**4, (240, 80), lp_threshold)
 		if len(LlpImgs):
