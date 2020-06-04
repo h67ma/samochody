@@ -125,7 +125,7 @@ def main():
     images_paths = glob.glob('%s/*car.png' % trim_dir)
     images_paths.sort() 
     
-    for img_path in images_paths:
+    for i, img_path in images_paths:
         #LPD
         print('\t Processing %s' % img_path)
         bname = splitext(basename(img_path))[0]
@@ -139,6 +139,9 @@ def main():
         print('\tScanning %s' % img_path)
         print("Converting CV img to darknet img")
         img_converted = dn.nparray_to_image(img)
+        img_converted = cv2.cvtColor(img_converted, cv2.COLOR_RGB2BGR)
+        if i < 10:
+            
         lp_str = ocr(img_converted, ocr_net, ocr_meta, ocr_threshold)
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
