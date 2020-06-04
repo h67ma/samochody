@@ -37,7 +37,7 @@ for img_file in img_files:
 			lp_label = '%s/%s_%dcar_lp.txt' % (output_dir, bname, i)
 			lp_label_str = '%s/%s_%dcar_lp_str.txt' % (output_dir, bname, i)
 
-			if isfile(lp_label):
+			if isfile(lp_label_str):
 				Llp_shapes = readShapes(lp_label)
 				pts = Llp_shapes[0].pts*lcar.wh().reshape(2, 1) + lcar.tl().reshape(2, 1)
 				ptspx = pts*np.array(I.shape[1::-1], dtype=float).reshape(2, 1)

@@ -44,14 +44,14 @@ if __name__ == '__main__':
 				L.sort(key=lambda x: x.tl()[0])  # sort by position in image
 				lp_str = ''.join([chr(l.cl()) for l in L])
 
-				if len(lp_str) > MIN_PLATE_LETTERS:
+				if len(lp_str) >= MIN_PLATE_LETTERS:
 					with open('%s/%s_str.txt' % (output_dir, bname), 'w') as f:
 						f.write(lp_str + '\n')
 					print('\t\tLP: %s' % lp_str)
 				else:
 					print('\t\tLP too short')
 			else:
-				print('No characters found')
+				print('\t\tNo characters found')
 	except:
 		traceback.print_exc()
 		sys.exit(1)
