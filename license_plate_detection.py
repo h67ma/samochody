@@ -29,7 +29,6 @@ def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
 		print("\t\tBound dim: %d, ratio: %f" % (bound_dim, ratio))
 
 		Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
-		print("I am here")
 		if len(LlpImgs):
 			Ilp = LlpImgs[0]
 			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
@@ -39,7 +38,8 @@ def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
 			return Ilp*255., [s], True
 		else:
 			return None, None, False
-	except:
+	except Exception as e:
+		print("Exception: {}".format(e))
 		return None, None, False
 
 
