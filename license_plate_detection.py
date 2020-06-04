@@ -14,24 +14,18 @@ from src.label import Shape, writeShapes
 def adjust_pts(pts,lroi):
 	return pts*lroi.wh().reshape((2,1)) + lroi.tl().reshape((2,1))
 
-def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
+def license_detection(Ivehicle, wpod_net, lp_threshold):
 	try:
-		Ivehicle2 = cv2.imread(img_path)
-		# print("============RAM============")
-		# print(Ivehicle)
-		# print("==============HDD============")
-		# print(Ivehicle2)
-		# print('Searching for license plates using WPOD-NET')
-		print("Are equal? = {}".format((Ivehicle == Ivehicle2).all()))
 		ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
 		side = int(ratio*288.)
 		bound_dim = min(side + (side%(2**4)), 608)
 		print("\t\tBound dim: %d, ratio: %f" % (bound_dim, ratio))
 		# Ivehicle float64
 		# Ivehicle2 uint8
-		Ivehicle = Ivehicle.astype('uint8')
-		print("Are equal now? = {}".format((Ivehicle == Ivehicle2).all()))
-		Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
+
+		# TODO: na co ta konwersja???? useless
+		Ivehicle = Ivehicle.astype('float32')
+		Llp, LlpImgs, _ = detect_lp(wpod_net, Ivehicle, bound_dim, 2**4, (240, 80), lp_threshold)
 		if len(LlpImgs):
 			Ilp = LlpImgs[0]
 			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)

@@ -10,7 +10,7 @@ from os import makedirs
 from src.utils import crop_region, image_files_from_folder
 from darknet.python.darknet import detect, detect_2_0
 
-def vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold, output_dir, bname):
+def vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold):
 	detected, _ = detect(vehicle_net, vehicle_meta, img_path ,thresh=vehicle_threshold)
 
 	detected = [r for r in detected if r[0] in ['car','bus']]
@@ -34,7 +34,7 @@ def vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold, outpu
 
 			Lcars.append(label)
 
-			cv2.imwrite('%s/%s_%dcar.png' % (output_dir, bname, i), Icar)
+			#cv2.imwrite('%s/%s_%dcar.png' % (output_dir, bname, i), Icar)
 			Icars.append(Icar)
 
 		#lwrite('%s/%s_cars.txt' % (output_dir,bname), Lcars)

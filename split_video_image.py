@@ -138,7 +138,7 @@ def main():
         # VD
         print('\tScanning %s' % img_path)
         file_name = basename(splitext(img_path)[0])
-        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold, trim_dir, file_name)
+        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold)
 
         for i, car_img in enumerate(Icars):
             # LPD
@@ -149,7 +149,7 @@ def main():
             # z_pliku = cv2.imread('%s/%s' % (trim_dir, bname))
             # print(z_pliku)
             print('\t Processing %s' % bname)
-            lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold, '%s/%s' % (trim_dir, bname))
+            lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold)
             if not ok:
                 print('not ok')
                 continue
