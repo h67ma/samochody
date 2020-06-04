@@ -125,7 +125,7 @@ def main():
     images_paths = glob.glob('%s/*car.png' % trim_dir)
     images_paths.sort() 
     
-    for i, img_path in images_paths:
+    for img_path in images_paths:
         #LPD
         print('\t Processing %s' % img_path)
         bname = splitext(basename(img_path))[0]
