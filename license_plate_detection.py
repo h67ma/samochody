@@ -17,11 +17,12 @@ def adjust_pts(pts,lroi):
 def license_detection(Ivehicle2, wpod_net, lp_threshold, img_path):
 	try:
 		Ivehicle = cv2.imread(img_path)
-		print("============RAM============")
-		print(Ivehicle)
-		print("==============HDD============")
-		print(Ivehicle2)
-		print('Searching for license plates using WPOD-NET')
+		# print("============RAM============")
+		# print(Ivehicle)
+		# print("==============HDD============")
+		# print(Ivehicle2)
+		# print('Searching for license plates using WPOD-NET')
+		print("Are equal? = {}".format((Ivehicle == Ivehicle2).all()))
 		ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
 		side = int(ratio*288.)
 		bound_dim = min(side + (side%(2**4)), 608)
