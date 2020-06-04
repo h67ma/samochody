@@ -9,7 +9,7 @@ import collections
 import darknet.python.darknet as dn
 from license_plate_ocr import ocr
 from license_plate_detection import license_detection
-from vehicle-detection import vehicle_detect
+from vehicle_detection import vehicle_detect
 from src.keras_utils import load_model
 from src.utils import image_files_from_folder
 
