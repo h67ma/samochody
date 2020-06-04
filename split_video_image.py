@@ -114,7 +114,7 @@ def main():
     print("Loading vehicle model...")
     vehicle_net = dn.load_net(vehicle_netcfg, vehicle_weights, 0)
     vehicle_meta = dn.load_meta(vehicle_dataset)
-    
+
     ocr_threshold = .4
     ocr_weights = 'data/ocr/ocr-net.weights'
     ocr_netcfg = 'data/ocr/ocr-net.cfg'
@@ -132,8 +132,8 @@ def main():
     # images_paths = glob.glob('%s/*car.png' % trim_dir)
     # images_paths.sort() 
     images_paths = image_files_from_folder(input_dir)
-	images_paths.sort()
-    
+    images_paths.sort()
+
     for img_path in images_paths:
         # VD
         print('\tScanning %s' % img_path)
