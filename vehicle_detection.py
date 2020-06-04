@@ -10,8 +10,8 @@ from os import makedirs
 from src.utils import crop_region, image_files_from_folder
 from darknet.python.darknet import detect, detect_2_0
 
-def vehicle_detect(img, vehicle_net, vehicle_meta, vehicle_threshold):
-	detected, _ = detect(vehicle_net, vehicle_meta, img ,thresh=vehicle_threshold)
+def vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold):
+	detected, _ = detect(vehicle_net, vehicle_meta, img_path ,thresh=vehicle_threshold)
 
 	detected = [r for r in detected if r[0] in ['car','bus']]
 
