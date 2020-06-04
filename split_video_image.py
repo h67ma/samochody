@@ -144,9 +144,9 @@ def main():
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
                 f.write(lp_str + '\n')
-        # print('Hi7')
-        # del(img)
-        # print('Hi8')
+        print('Hi7')
+        del(img)
+        print('Hi8')
 
 
     # # OCR
