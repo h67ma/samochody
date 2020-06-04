@@ -6,13 +6,13 @@ import darknet.python.darknet as dn
 
 from os.path import splitext, basename
 from glob import glob
-from darknet.python.darknet import detect, detect_on_image
+from darknet.python.darknet import detect, detect_2_0
 from src.label import dknet_label_conversion
 from src.utils import nms
 
 def ocr(img, ocr_net, ocr_meta, ocr_threshold):
 	print('OCR detecting...')
-	detected, (width, height) = detect(ocr_net, ocr_meta, img, thresh=ocr_threshold, nms=None)
+	detected, (width, height) = detect_2_0(ocr_net, ocr_meta, img, thresh=ocr_threshold, nms=None)
 	print('OCR detected')
 	if len(detected):
 		L = dknet_label_conversion(detected, width, height)
