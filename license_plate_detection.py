@@ -39,7 +39,10 @@ def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
 		else:
 			return None, None, False
 	except Exception as e:
-		print("Exception: {}".format(e))
+		print("Exception:")
+		print('======')
+		print(e)
+		print('======')
 		return None, None, False
 
 
