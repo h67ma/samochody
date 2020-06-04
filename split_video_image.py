@@ -131,7 +131,7 @@ def main():
 
     # images_paths = glob.glob('%s/*car.png' % trim_dir)
     # images_paths.sort() 
-    images_paths = image_files_from_folder(input_dir)
+    images_paths = image_files_from_folder(in_dir)
     images_paths.sort()
 
     for img_path in images_paths:
