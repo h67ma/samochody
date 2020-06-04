@@ -12,7 +12,7 @@ from src.utils import nms
 
 def ocr(img, ocr_net, ocr_meta, ocr_threshold):
 	print('OCR detecting...')
-	detected, (width, height) = detect_on_image(ocr_net, ocr_meta, img, thresh=ocr_threshold, nms=None)
+	detected, (width, height) = detect(ocr_net, ocr_meta, img, thresh=ocr_threshold, nms=None)
 	print('OCR detected')
 	if len(detected):
 		L = dknet_label_conversion(detected, width, height)

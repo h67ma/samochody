@@ -136,26 +136,27 @@ def main():
             continue
 
         # OCR
-        print('\tScanning %s' % img_path)
-        print("Converting CV img to darknet img")
-        img_converted_py = dn.array_to_image(img)
-        dn.rgbgr_image(img_converted_py)
+        img_converted = dn.array_to_image(img)
+        # print('\tScanning %s' % img_path)
+        # print("Converting CV img to darknet img")
+        # img_converted_py = dn.array_to_image(img)
+        # dn.rgbgr_image(img_converted_py)
 
-        img_converted_C = dn.array_to_image_C(img)
+        # img_converted_C = dn.array_to_image_C(img)
 
-        print("Sizes")
-        print("C = {}\tPy = {}".format(sys.getsizeof(img_converted_C), sys.getsizeof(img_converted_py)))
-        print("C img")
-        print("w={}\th={}\ndata={}".format(img_converted_C.w, img_converted_C.h, img_converted_C.data))
-        print("Py img")
-        print("w={}\th={}\ndata={}".format(img_converted_py.w, img_converted_py.h, img_converted_py.data))
-        print("Image converted")
+        # print("Sizes")
+        # print("C = {}\tPy = {}".format(sys.getsizeof(img_converted_C), sys.getsizeof(img_converted_py)))
+        # print("C img")
+        # print("w={}\th={}\ndata={}".format(img_converted_C.w, img_converted_C.h, img_converted_C.data))
+        # print("Py img")
+        # print("w={}\th={}\ndata={}".format(img_converted_py.w, img_converted_py.h, img_converted_py.data))
+        # print("Image converted")
 
 
         # img_converted = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         # img_converted = dn.nparray_to_image(img_converted)
         
-        lp_str = ocr(img_converted_py, ocr_net, ocr_meta, ocr_threshold)
+        lp_str = ocr(img_converted, ocr_net, ocr_meta, ocr_threshold)
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
                 f.write(lp_str + '\n')
