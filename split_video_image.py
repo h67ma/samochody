@@ -147,8 +147,8 @@ def main():
             print('FROM RAM')
             print(car_img)
             print('FROM HDD')
-            bname = "%s_%dcar" % (file_name, i)
-            z_pliku = cv2.imread('%s/%s_%dcar.png' % (trim_dir, bname, i))
+            bname = "%s_%dcar.png" % (file_name, i)
+            z_pliku = cv2.imread('%s/%s' % (trim_dir, bname, i))
             print(z_pliku)
 
 
