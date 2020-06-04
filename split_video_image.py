@@ -136,7 +136,6 @@ def main():
             continue
 
         # OCR
-        img_converted = dn.array_to_image(img)
         # print('\tScanning %s' % img_path)
         # print("Converting CV img to darknet img")
         # img_converted_py = dn.array_to_image(img)
@@ -156,7 +155,7 @@ def main():
         # img_converted = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         # img_converted = dn.nparray_to_image(img_converted)
         
-        lp_str = ocr(img_converted, ocr_net, ocr_meta, ocr_threshold)
+        lp_str = ocr(img, ocr_net, ocr_meta, ocr_threshold)
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
                 f.write(lp_str + '\n')
