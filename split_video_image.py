@@ -138,7 +138,7 @@ def main():
         # VD
         print('\tScanning %s' % img_path)
         file_name = basename(splitext(img_path)[0])
-        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold, trim_dir)
+        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold, trim_dir, file_name)
 
         for i, car_img in enumerate(Icars):
             # LPD
