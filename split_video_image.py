@@ -107,14 +107,14 @@ def main():
     print("Processing images")
     vehicle_threshold = .5
 
-	vehicle_weights = 'data/vehicle-detector/yolo-voc.weights'
-	vehicle_netcfg = 'data/vehicle-detector/yolo-voc.cfg'
-	vehicle_dataset = 'data/vehicle-detector/voc.data'
+    vehicle_weights = 'data/vehicle-detector/yolo-voc.weights'
+    vehicle_netcfg = 'data/vehicle-detector/yolo-voc.cfg'
+    vehicle_dataset = 'data/vehicle-detector/voc.data'
 
     print("Loading vehicle model...")
-	vehicle_net = dn.load_net(vehicle_netcfg, vehicle_weights, 0)
-	vehicle_meta = dn.load_meta(vehicle_dataset)
-
+    vehicle_net = dn.load_net(vehicle_netcfg, vehicle_weights, 0)
+    vehicle_meta = dn.load_meta(vehicle_dataset)
+    
     ocr_threshold = .4
     ocr_weights = 'data/ocr/ocr-net.weights'
     ocr_netcfg = 'data/ocr/ocr-net.cfg'
