@@ -14,9 +14,9 @@ from src.label import Shape, writeShapes
 def adjust_pts(pts,lroi):
 	return pts*lroi.wh().reshape((2,1)) + lroi.tl().reshape((2,1))
 
-def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
+def license_detection(Ivehicle2, wpod_net, lp_threshold, img_path):
 	try:
-		Ivehicle2 = cv2.imread(img_path)
+		Ivehicle = cv2.imread(img_path)
 		print("============RAM============")
 		print(Ivehicle)
 		print("==============HDD============")
