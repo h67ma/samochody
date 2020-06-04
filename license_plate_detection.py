@@ -16,7 +16,11 @@ def adjust_pts(pts,lroi):
 
 def license_detection(Ivehicle, wpod_net, lp_threshold, img_path):
 	try:
-		#Ivehicle = Ivehicle = cv2.imread(img_path)
+		Ivehicle2 = cv2.imread(img_path)
+		print("============RAM============")
+		print(Ivehicle)
+		print("==============HDD============")
+		print(Ivehicle2)
 		print('Searching for license plates using WPOD-NET')
 		ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
 		side = int(ratio*288.)
