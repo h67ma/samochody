@@ -23,12 +23,17 @@ def license_detection(Ivehicle, wpod_net, lp_threshold):
 		print("\t\tBound dim: %d, ratio: %f" % (bound_dim, ratio))
 
 		Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
+		print('Hi1')
 		if len(LlpImgs):
 			Ilp = LlpImgs[0]
+			print('Hi2')
 			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
+			print('Hi3')
 			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_GRAY2BGR)
+			print('Hi4')
 
 			s = Shape(Llp[0].pts)
+			print('Hi5')
 
 			# cv2.imwrite('%s/%s_lp.png' % (output_dir, bname), Ilp*255.)
 			# writeShapes('%s/%s_lp.txt' % (output_dir, bname), [s])
