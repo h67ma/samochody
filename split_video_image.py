@@ -122,7 +122,7 @@ def main():
 
     
 
-    images_paths = glob.glob('%s/*car.png' % trim_dir)
+    images_paths = glob.glob('%s/*car.png' % trim_dir).sort()
 
     for img_path in images_paths:
         #LPD
