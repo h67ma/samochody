@@ -143,7 +143,7 @@ def main():
         for i, car_img in enumerate(Icars):
             # LPD
             bname = "%s_%dcar" % (file_name, i)
-            print('\t Processing %s' % bname))
+            print('\t Processing %s' % bname)
             lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold)
             if not ok:
                 print('not ok')
