@@ -24,8 +24,8 @@ def license_detection(Ivehicle, wpod_net, lp_threshold):
 		# Ivehicle2 uint8
 
 		# TODO: na co ta konwersja???? useless
-		Ivehicle = Ivehicle.astype('float32')
-		Llp, LlpImgs, _ = detect_lp(wpod_net, Ivehicle, bound_dim, 2**4, (240, 80), lp_threshold)
+		Ivehicle = Ivehicle.astype('uint8')
+		Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
 		if len(LlpImgs):
 			Ilp = LlpImgs[0]
 			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
