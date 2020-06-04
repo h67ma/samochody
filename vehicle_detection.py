@@ -34,7 +34,7 @@ def vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold):
 
 			Lcars.append(label)
 
-			#cv2.imwrite('%s/%s_%dcar.png' % (output_dir, bname, i), Icar)
+			cv2.imwrite('%s/%s_%dcar.png' % (output_dir, bname, i), Icar)
 			Icars.append(Icar)
 
 		#lwrite('%s/%s_cars.txt' % (output_dir,bname), Lcars)

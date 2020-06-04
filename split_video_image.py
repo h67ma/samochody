@@ -142,7 +142,17 @@ def main():
 
         for i, car_img in enumerate(Icars):
             # LPD
+
+
+
+            print(car_img)
             bname = "%s_%dcar" % (file_name, i)
+            z_pliku = cv2.imread('%s/%s_%dcar.png' % (input_dir, bname, i))
+            print(z_pliku)
+
+
+
+           
             print('\t Processing %s' % bname)
             lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold)
             if not ok:
