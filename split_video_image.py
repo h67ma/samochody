@@ -148,7 +148,7 @@ def main():
             print(car_img)
             print('FROM HDD')
             bname = "%s_%dcar.png" % (file_name, i)
-            z_pliku = cv2.imread('%s/%s' % (trim_dir, bname, i))
+            z_pliku = cv2.imread('%s/%s' % (trim_dir, bname))
             print(z_pliku)
 
 
