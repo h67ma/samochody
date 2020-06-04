@@ -139,12 +139,14 @@ def main():
         # OCR
         print('\tScanning %s' % img_path)
         print("Converting CV img to darknet img")
-        img = dn.array_to_image(img)
-        lp_str = ocr(img, ocr_net, ocr_meta, ocr_threshold)
+        img_converted = dn.array_to_image(img)
+        lp_str = ocr(img_converted, ocr_net, ocr_meta, ocr_threshold)
         if lp_str:
             with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
                 f.write(lp_str + '\n')
-        del(img)
+        # print('Hi7')
+        # del(img)
+        # print('Hi8')
 
 
     # # OCR
