@@ -26,7 +26,7 @@ def generate_output(output_dir, bname, original_frame_path, labels):
 			draw_label(original_frame, lcar, color=YELLOW, thickness=3)
 			
 			if lp_label:
-				Llp_shapes = readShapes(lp_label)
+				Llp_shapes = lp_label
 				pts = Llp_shapes[0].pts*lcar.wh().reshape(2, 1) + lcar.tl().reshape(2, 1)
 				ptspx = pts*np.array(original_frame.shape[1::-1], dtype=float).reshape(2, 1)
 				draw_losangle(original_frame, ptspx, RED,3)
