@@ -142,12 +142,7 @@ def main():
 
         for i, car_img in enumerate(Icars):
             # LPD
-            # print('FROM RAM')
-            # print(car_img)
-            # print('FROM HDD')
             bname = "%s_%dcar.png" % (file_name, i)
-            # z_pliku = cv2.imread('%s/%s' % (trim_dir, bname))
-            # print(z_pliku)
             print('\t Processing %s' % bname)
             lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold)
             if not ok:
@@ -159,6 +154,8 @@ def main():
             if lp_str:
                 with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
                     f.write(lp_str + '\n')
+
+            # TODO: stworzenie klatki + timestamp
 
 
     # # OCR
