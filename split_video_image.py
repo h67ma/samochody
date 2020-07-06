@@ -154,7 +154,7 @@ def main():
             labels.append( (Lcars[i], lp_label, lp_str) )
 
         # TODO: stworzenie klatki + timestamp
-        timestamp = generate_output(out_dir, file_name, img_path, labels)
+        frame_ready, timestamp = generate_output(out_dir, file_name, img_path, labels)
 
     # # OCR
     # images_paths = sorted(glob.glob('%s/*lp.png' % trim_dir))
