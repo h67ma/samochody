@@ -1,6 +1,7 @@
 from ctypes import *
 import math
 import random
+import numpy as np
 
 def sample(probs):
     s = sum(probs)
@@ -114,6 +115,10 @@ predict_image = lib.network_predict_image
 predict_image.argtypes = [c_void_p, IMAGE]
 predict_image.restype = POINTER(c_float)
 
+ndarray_image = lib.ndarray_to_image
+ndarray_image.argtypes = [POINTER(c_ubyte), POINTER(c_long), POINTER(c_long)]
+ndarray_image.restype = IMAGE
+
 def classify(net, meta, im):
     out = predict_image(net, im)
     res = []
@@ -124,6 +129,74 @@ def classify(net, meta, im):
 
 def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
     im = load_image(image, 0, 0)
+    num = c_int(0)
+    pnum = pointer(num)
+    predict_image(net, im)
+    dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
+    num = pnum[0]
+    if (nms): do_nms_obj(dets, num, meta.classes, nms);
+
+    res = []
+    for j in range(num):
+        for i in range(meta.classes):
+            if dets[j].prob[i] > 0:
+                b = dets[j].bbox
+                res.append((meta.names[i], dets[j].prob[i], (b.x, b.y, b.w, b.h)))
+    res = sorted(res, key=lambda x: -x[1])
+    wh = (im.w,im.h)
+    free_image(im)
+    free_detections(dets, num)
+    return res,wh
+
+def detect_2_0(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
+    if isinstance(image, bytes):
+        # image is a filename 
+        # i.e. image = b'/darknet/data/dog.jpg'
+        im = load_image(image, 0, 0)
+    else:
+        # image is an nparray
+        # i.e. image = cv2.imread('/darknet/data/dog.jpg')
+        im, image = array_to_image(image)
+        rgbgr_image(im)
+    num = c_int(0)
+    pnum = pointer(num)
+    predict_image(net, im)
+    dets = get_network_boxes(net, im.w, im.h, thresh, 
+                             hier_thresh, None, 0, pnum)
+    num = pnum[0]
+    if nms: do_nms_obj(dets, num, meta.classes, nms)
+
+    res = []
+    for j in range(num):
+        a = dets[j].prob[0:meta.classes]
+        if any(a):
+            ai = np.array(a).nonzero()[0]
+            for i in ai:
+                b = dets[j].bbox
+                res.append((meta.names[i], dets[j].prob[i], 
+                           (b.x, b.y, b.w, b.h)))
+
+    res = sorted(res, key=lambda x: -x[1])
+    wh = (im.w,im.h)
+    if isinstance(image, bytes): free_image(im)
+    free_detections(dets, num)
+    return res, wh
+
+# def array_to_image_C(img):
+#     data = img.ctypes.data_as(POINTER(c_ubyte))
+#     image = ndarray_image(data, img.ctypes.shape, img.ctypes.strides)
+#     return image
+
+def array_to_image(arr):
+    # need to return old values to avoid python freeing memory
+    arr = arr.transpose(2,0,1)
+    c, h, w = arr.shape[0:3]
+    arr = np.ascontiguousarray(arr.flat, dtype=np.float32) / 255.0
+    data = arr.ctypes.data_as(POINTER(c_float))
+    im = IMAGE(w,h,c,data)
+    return im, arr
+
+def detect_on_image(net, meta, im, thresh=.5, hier_thresh=.5, nms=.45):
     num = c_int(0)
     pnum = pointer(num)
     predict_image(net, im)
