@@ -6,9 +6,14 @@ OVERLAY_REMAIN_TIME = 0.5  # how many seconds plates remain in the image
 FONT_GREEN = (0, 255, 0)
 
 class Overlay:
-	def __init__(self, img, frames_left):
-		self.img = img
-		self.frames_left = frames_left
+    def __init__(self, img, frames_left):
+        self.img = img
+        self.frames_left = frames_left
+
+class Plate:
+    def __init__(self, img, text):
+        self.img = img
+        self.text = text
 
 class Clusterer:
     def __init__(self, fps):
@@ -30,7 +35,7 @@ class Clusterer:
 
     """
     img: image to add overlay to
-    platez: array with detected license plates (images) along with detected text, e.g. [{img: cv image, text: "ASD F1234"}, {}]
+    platez: array of Plate
     """
     def add_overlays(self, img, platez):
         for plate in platez:
