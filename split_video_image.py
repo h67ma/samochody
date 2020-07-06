@@ -12,7 +12,7 @@ from license_plate_detection import license_detection
 from vehicle_detection import vehicle_detect
 from src.keras_utils import load_model
 from src.utils import image_files_from_folder
-from clusterer import Clusterer
+from clusterer import Clusterer, Plate
 from gen_outputs import generate_output
 
 
@@ -125,15 +125,16 @@ def main():
     images_paths = image_files_from_folder(in_dir)
     images_paths.sort()
 
+    clusterer = Clusterer(fps)
+
     for img_path in images_paths:
         labels = []
+        platez = []
 
         # VD
         print("\tScanning %s" % img_path)
         file_name = basename(splitext(img_path)[0])
-        Icars, Lcars = vehicle_detect(
-            img_path, vehicle_net, vehicle_meta, vehicle_threshold
-        )
+        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold)
 
         for i, car_img in enumerate(Icars):
             # LPD
@@ -142,19 +143,18 @@ def main():
             lp_img, lp_label, ok = license_detection(car_img, wpod_net, lp_threshold)
             if not ok:
                 print("label not detected")
-                labels.append( (Lcars[i], None, None) )
+                labels.append((Lcars[i], None, None))
                 continue
 
             # OCR
             lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
-            if lp_str:
-                with open("%s/%s_str.txt" % (trim_dir, bname), "w") as f:
-                    f.write(lp_str + "\n")
-
-            labels.append( (Lcars[i], lp_label, lp_str) )
+            labels.append((Lcars[i], lp_label, lp_str))
+            platez.append(Plate(lp_img, lp_str))
 
         # TODO: stworzenie klatki + timestamp
         frame_ready, timestamp = generate_output(out_dir, file_name, img_path, labels)
+        clusterer.add_overlays(frame_ready, platez)
+        cv2.imwrite("%s/%s_output.png" % (out_dir, bname), frame_ready)
 
     # # OCR
     # images_paths = sorted(glob.glob('%s/*lp.png' % trim_dir))
@@ -170,9 +170,6 @@ def main():
 
     # print("Generating timestamp file...")
     # os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
-
-    clusterer = Clusterer(fps)
-    clusterer.add_overlays(img)
 
     print("Combining video")
     combine_video(out_dir, fps, out_video)
