@@ -37,7 +37,7 @@ def generate_output(output_dir, bname, original_frame_path, labels):
 					if len(lp_str) in range(6, 8):
 						output_str += ',%s' % lp_str
 
-	cv2.imwrite('%s/%s_output.png' % (output_dir,bname),I)
+	cv2.imwrite('%s/%s_output.png' % (output_dir,bname), original_frame)
 	if len(output_str.split(',')) > 1:
 		# sys.stdout.write('%s\n' % output_str)
 		return output_str
