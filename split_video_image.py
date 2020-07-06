@@ -12,7 +12,7 @@ from license_plate_detection import license_detection
 from vehicle_detection import vehicle_detect
 from src.keras_utils import load_model
 from src.utils import image_files_from_folder
-from clusterer import add_overlays
+from clusterer import Clusterer
 
 
 def frame_time(fps, frame_n):
@@ -164,12 +164,8 @@ def main():
     # print("Generating timestamp file...")
     # os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
 
-    # move actual output images to out_dir, leave trimmed in trim_dir
-    os.system(
-        "mv %s/*_output.png %s" % (trim_dir, out_dir)
-    )  # I'm too lazy to do that in python
-
-    add_overlays(out_dir, trim_dir, fps)
+    clusterer = Clusterer(fps)
+    clusterer.add_overlays(img)
 
     print("Combining video")
     combine_video(out_dir, fps, out_video)
