@@ -172,11 +172,11 @@ def main():
     # os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
 
     # move actual output images to out_dir, leave trimmed in trim_dir
-    os.system(
-        "mv %s/*_output.png %s" % (trim_dir, out_dir)
-    )  # I'm too lazy to do that in python
+    # os.system(
+    #     "mv %s/*_output.png %s" % (trim_dir, out_dir)
+    # )  # I'm too lazy to do that in python
 
-    add_overlays(out_dir, trim_dir, fps)
+    #add_overlays(out_dir, trim_dir, fps)
 
     print("Combining video")
     combine_video(out_dir, fps, out_video)
