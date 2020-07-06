@@ -13,6 +13,7 @@ from vehicle_detection import vehicle_detect
 from src.keras_utils import load_model
 from src.utils import image_files_from_folder
 from clusterer import Clusterer
+from gen_outputs import generate_output
 
 
 def frame_time(fps, frame_n):
@@ -125,6 +126,8 @@ def main():
     images_paths.sort()
 
     for img_path in images_paths:
+        labels = []
+
         # VD
         print("\tScanning %s" % img_path)
         file_name = basename(splitext(img_path)[0])
@@ -138,7 +141,8 @@ def main():
             print("\t Processing %s" % bname)
             lp_img, lp_label, ok = license_detection(car_img, wpod_net, lp_threshold)
             if not ok:
-                print("not ok")
+                print("label not detected")
+                labels.append( (Lcars[i], None, None) )
                 continue
 
             # OCR
@@ -147,7 +151,10 @@ def main():
                 with open("%s/%s_str.txt" % (trim_dir, bname), "w") as f:
                     f.write(lp_str + "\n")
 
-            # TODO: stworzenie klatki + timestamp
+            labels.append( (Lcars[i], lp_label, lp_str) )
+
+        # TODO: stworzenie klatki + timestamp
+        timestamp = generate_output(out_dir, file_name, img_path, labels)
 
     # # OCR
     # images_paths = sorted(glob.glob('%s/*lp.png' % trim_dir))
