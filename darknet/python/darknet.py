@@ -115,10 +115,6 @@ predict_image = lib.network_predict_image
 predict_image.argtypes = [c_void_p, IMAGE]
 predict_image.restype = POINTER(c_float)
 
-ndarray_image = lib.ndarray_to_image
-ndarray_image.argtypes = [POINTER(c_ubyte), POINTER(c_long), POINTER(c_long)]
-ndarray_image.restype = IMAGE
-
 def classify(net, meta, im):
     out = predict_image(net, im)
     res = []
@@ -128,7 +124,8 @@ def classify(net, meta, im):
     return res
 
 def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
-    im = load_image(image, 0, 0)
+    im, image = array_to_image(image)
+    rgbgr_image(im)
     num = c_int(0)
     pnum = pointer(num)
     predict_image(net, im)
@@ -144,7 +141,7 @@ def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
                 res.append((meta.names[i], dets[j].prob[i], (b.x, b.y, b.w, b.h)))
     res = sorted(res, key=lambda x: -x[1])
     wh = (im.w,im.h)
-    free_image(im)
+    #free_image(im)
     free_detections(dets, num)
     return res,wh
 

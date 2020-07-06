@@ -47,18 +47,19 @@ vs = WebcamVideoStream(src=0).start()
 fps = FPS().start()
 # loop over some frames...this time using the threaded stream
 while fps._numFrames < args["num_frames"]:
-
+    fps = FPS().start()
     # grab the frame from the threaded video stream and resize it
     # to have a maximum width of 400 pixels
     frame = vs.read()
     frame = imutils.resize(frame, width=400)
     # check to see if the frame should be displayed to our screen
-    if args["display"] > 0 and fps._end and fps.fps() < args["cap"]:
+    if args["display"] > 0 and fps_end:
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
         fps.update()
     # update the FPS counter
 
+    fps.update()
     fps.stop()
     print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
     print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
