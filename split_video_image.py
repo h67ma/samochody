@@ -1,4 +1,4 @@
-from clusterer import add_overlays
+from clusterer import Clusterer, Plate
 from imutils.video import WebcamVideoStream
 from license_plate_ocr import ocr
 from license_plate_detection import license_detection
@@ -7,6 +7,7 @@ from src.keras_utils import load_model
 from src.utils import image_files_from_folder
 from src.collections_utils import DiscardQueue
 from vehicle_detection import vehicle_detect
+from gen_outputs import generate_output
 import argparse
 import concurrent.futures
 import cv2
@@ -81,8 +82,12 @@ def main():
     print("Loading wpod model...")
     wpod_net = load_model(wpod_net_path)
 
+    clusterer = Clusterer()
     try:
         while(True):
+            labels = []
+            platez = []
+
             img = img_queue.get()
             print("\tScanning image")
 
@@ -94,14 +99,18 @@ def main():
                 # LPD
                 lp_img, lp_label, ok = license_detection(car_img, wpod_net, lp_threshold)
                 if not ok:
-                    print("not ok")
+                    print("label not detected")
+                    labels.append((Lcars[i], None, None))
                     continue
                 # OCR
                 lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
+                labels.append((Lcars[i], lp_label, lp_str))
+                platez.append(Plate(lp_img, lp_str))
 
-            display_queue.put(img)
-            # TODO: stworzenie klatki + timestamp
-
+            # TODO: timestamp
+            frame_ready = generate_output(img, labels)
+            clusterer.add_overlays(frame_ready, platez)
+            display_queue.put(frame_ready)
     except KeyboardInterrupt:
         pass
 
