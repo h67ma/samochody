@@ -14,35 +14,43 @@ from src.keras_utils import load_model
 from src.utils import image_files_from_folder
 from clusterer import add_overlays
 
+
 def frame_time(fps, frame_n):
     timestamp = frame_n / fps
     hours = int(timestamp / 3600)
     minutes = int(timestamp / 60) % 60
     seconds = int(timestamp) % 60
-    ms = int(( timestamp - int(timestamp) ) * 1000)
+    ms = int((timestamp - int(timestamp)) * 1000)
     return (hours, minutes, seconds, ms)
+
 
 def split_video(in_video, out_dir, fps):
     vidcap = cv2.VideoCapture(in_video)
     success, image = vidcap.read()
     count = 0
     time = None
-    
+
     while success:
         time = frame_time(fps, count)
-        cv2.imwrite("%s/%02d-%02d-%02d-%04d.jpg" % (out_dir, time[0], time[1], time[2], time[3]), image)
+        cv2.imwrite(
+            "%s/%02d-%02d-%02d-%04d.jpg"
+            % (out_dir, time[0], time[1], time[2], time[3]),
+            image,
+        )
         success, image = vidcap.read()
         count += 1
+
 
 def get_fps(in_video):
     vidcap = cv2.VideoCapture(in_video)
     return vidcap.get(cv2.CAP_PROP_FPS)
 
+
 def combine_video(in_dir, fps, out_video):
     images = [f for f in os.listdir(in_dir)]
     img = cv2.imread("%s/%s" % (in_dir, images[0]))
     size = (img.shape[1], img.shape[0])
-    out = cv2.VideoWriter(out_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
+    out = cv2.VideoWriter(out_video, cv2.VideoWriter_fourcc(*"mp4v"), fps, size)
     images.sort()
 
     for image in images:
@@ -51,20 +59,21 @@ def combine_video(in_dir, fps, out_video):
 
     out.release()
 
+
 def main():
     if len(sys.argv) < 2:
         print("Pls provide input video name (with extension)")
         quit()
 
-    overlay_remain_time = 1 # how many seconds plates remain in the image
+    overlay_remain_time = 1  # how many seconds plates remain in the image
     start_time = time.time()
     in_video = sys.argv[1]
-    out_video = "%s_tagged.mp4" % (in_video.split('.')[0])
-    timestamp_file = "%s_timestamps.csv" % (in_video.split('.')[0])
+    out_video = "%s_tagged.mp4" % (in_video.split(".")[0])
+    timestamp_file = "%s_timestamps.csv" % (in_video.split(".")[0])
     in_dir = "tmp_in"
     trim_dir = "tmp_trim"
     out_dir = "tmp_out"
-    lp_model="data/lp-detector/wpod-net_update1.h5"
+    lp_model = "data/lp-detector/wpod-net_update1.h5"
     fps = get_fps(in_video)
     overlay_remain_frames = int(overlay_remain_time * fps)
 
@@ -86,63 +95,62 @@ def main():
     # os.system("python license-plate-ocr.py %s" % (trim_dir))
 
     print("Processing images")
-    vehicle_threshold = .5
+    vehicle_threshold = 0.5
 
-    vehicle_weights = 'data/vehicle-detector/yolo-voc.weights'
-    vehicle_netcfg = 'data/vehicle-detector/yolo-voc.cfg'
-    vehicle_dataset = 'data/vehicle-detector/voc.data'
+    vehicle_weights = "data/vehicle-detector/yolo-voc.weights"
+    vehicle_netcfg = "data/vehicle-detector/yolo-voc.cfg"
+    vehicle_dataset = "data/vehicle-detector/voc.data"
 
     print("Loading vehicle model...")
     vehicle_net = dn.load_net(vehicle_netcfg, vehicle_weights, 0)
     vehicle_meta = dn.load_meta(vehicle_dataset)
 
-    ocr_threshold = .4
-    ocr_weights = 'data/ocr/ocr-net.weights'
-    ocr_netcfg = 'data/ocr/ocr-net.cfg'
-    ocr_dataset = 'data/ocr/ocr-net.data'
+    ocr_threshold = 0.4
+    ocr_weights = "data/ocr/ocr-net.weights"
+    ocr_netcfg = "data/ocr/ocr-net.cfg"
+    ocr_dataset = "data/ocr/ocr-net.data"
 
     print("Loading OCR model...")
-    ocr_net  = dn.load_net(ocr_netcfg, ocr_weights, 0)
+    ocr_net = dn.load_net(ocr_netcfg, ocr_weights, 0)
     ocr_meta = dn.load_meta(ocr_dataset)
 
-    lp_threshold = .5
+    lp_threshold = 0.5
     wpod_net_path = lp_model
     print("Loading wpod model...")
     wpod_net = load_model(wpod_net_path)
 
     # images_paths = glob.glob('%s/*car.png' % trim_dir)
-    # images_paths.sort() 
+    # images_paths.sort()
     images_paths = image_files_from_folder(in_dir)
     images_paths.sort()
 
     for img_path in images_paths:
         # VD
-        print('\tScanning %s' % img_path)
+        print("\tScanning %s" % img_path)
         file_name = basename(splitext(img_path)[0])
-        Icars, Lcars = vehicle_detect(img_path, vehicle_net, vehicle_meta, vehicle_threshold)
+        Icars, Lcars = vehicle_detect(
+            img_path, vehicle_net, vehicle_meta, vehicle_threshold
+        )
 
         for i, car_img in enumerate(Icars):
             # LPD
             bname = "%s_%dcar.png" % (file_name, i)
-            print('\t Processing %s' % bname)
-            lp_img, txt, ok = license_detection(car_img, wpod_net, lp_threshold)
+            print("\t Processing %s" % bname)
+            lp_img, lp_label, ok = license_detection(car_img, wpod_net, lp_threshold)
             if not ok:
-                print('not ok')
+                print("not ok")
                 continue
 
-            # OCR        
+            # OCR
             lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
             if lp_str:
-                with open('%s/%s_str.txt' % (trim_dir, bname),'w') as f:
-                    f.write(lp_str + '\n')
+                with open("%s/%s_str.txt" % (trim_dir, bname), "w") as f:
+                    f.write(lp_str + "\n")
 
             # TODO: stworzenie klatki + timestamp
 
-
     # # OCR
     # images_paths = sorted(glob.glob('%s/*lp.png' % trim_dir))
-
-    
 
     # for img_path in images_paths:
     #     print('\tScanning %s' % img_path)
@@ -157,7 +165,9 @@ def main():
     # os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
 
     # move actual output images to out_dir, leave trimmed in trim_dir
-    os.system("mv %s/*_output.png %s" % (trim_dir, out_dir)) # I'm too lazy to do that in python
+    os.system(
+        "mv %s/*_output.png %s" % (trim_dir, out_dir)
+    )  # I'm too lazy to do that in python
 
     add_overlays(out_dir, trim_dir, fps)
 
@@ -172,5 +182,5 @@ def main():
     print("Execution time: %fs" % (time.time() - start_time))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
