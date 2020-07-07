@@ -9,6 +9,7 @@ FRAMES_DISPLAYED = 30
 PLATE_W = 240
 PLATE_H = 80
 MID_PLATE_TEXT = 50
+INITIAL_Y_OFFSET = 40
 
 class Overlay:
     def __init__(self, img, frames_left):
@@ -41,9 +42,9 @@ class Clusterer:
         put_text(img, "curr", 400, 30)
         put_text(img, "total", 480, 30)
 
-        base_h, _, _ = img.shape
+        base_h, base_w, _ = img.shape
 
-        offsety = 40
+        offsety = INITIAL_Y_OFFSET
         offsetx = 0
         for plate_text, plate in self.current_overlays.items():
             # rows, cols, _ = plate.img.shape
@@ -53,8 +54,11 @@ class Clusterer:
             put_text(img, str(self.total_detections[plate_text]), offsetx + PLATE_W + 240, offsety + MID_PLATE_TEXT)
             offsety += PLATE_H
             if offsety + PLATE_H >= base_h:
-                offsety = 0
-                offsetx += PLATE_W
+                offsety = INITIAL_Y_OFFSET
+                offsetx += PLATE_W + 300
+                if offsetx + PLATE_W >= base_w:
+                    print("Can't fit all those platez in the image")
+                    return
 
     """
     adds overlay to img with detected plates. plates detected earlier are also shown (for a while)
