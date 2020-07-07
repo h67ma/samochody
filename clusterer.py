@@ -33,25 +33,29 @@ class Clusterer:
         self.total_detections = {}  # {"plate text": 123, ...}
 
     """
-    adds all current overlays to base_img
+    adds all current overlays to img
     """
-    def _overlay_img(self, base_img):
-        put_text(base_img, "img", 0, 30)
-        put_text(base_img, "text", 240, 30)
-        put_text(base_img, "curr", 400, 30)
-        put_text(base_img, "total", 480, 30)
+    def _overlay_img(self, img):
+        put_text(img, "img", 0, 30)
+        put_text(img, "text", 240, 30)
+        put_text(img, "curr", 400, 30)
+        put_text(img, "total", 480, 30)
 
-        base_rows, _, _ = base_img.shape
+        base_h, base_w, _ = img.shape
+        if base_h < PLATE_H or base_w < PLATE_W:
+            print("Input image too small: %dx%d. That's bad juju!" % (base_h, base_w))
+            return
+
         offsety = 40
         offsetx = 0
         for plate_text, plate in self.current_overlays.items():
             # rows, cols, _ = plate.img.shape
-            base_img[offsety:PLATE_H+offsety, offsetx:PLATE_W+offsetx] = plate.img
-            put_text(base_img, plate_text, offsetx + PLATE_W, offsety + MID_PLATE_TEXT)
-            put_text(base_img, str(plate.occured), offsetx + PLATE_W + 160, offsety + MID_PLATE_TEXT)
-            put_text(base_img, str(self.total_detections[plate_text]), offsetx + PLATE_W + 240, offsety + MID_PLATE_TEXT)
+            img[offsety:PLATE_H+offsety, offsetx:PLATE_W+offsetx] = plate.img
+            put_text(img, plate_text, offsetx + PLATE_W, offsety + MID_PLATE_TEXT)
+            put_text(img, str(plate.occured), offsetx + PLATE_W + 160, offsety + MID_PLATE_TEXT)
+            put_text(img, str(self.total_detections[plate_text]), offsetx + PLATE_W + 240, offsety + MID_PLATE_TEXT)
             offsety += PLATE_H
-            if offsety >= base_rows:
+            if offsety >= base_h:
                 offsety = 0
                 offsetx += PLATE_W
 
