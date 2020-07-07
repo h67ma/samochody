@@ -1,93 +1,127 @@
+from clusterer import Clusterer, Plate
+from imutils.video import WebcamVideoStream
+from license_plate_ocr import ocr
+from license_plate_detection import license_detection
+from os.path import basename, splitext
+from src.keras_utils import load_model
+from src.utils import image_files_from_folder
+from src.collections_utils import DiscardQueue
+from vehicle_detection import vehicle_detect
+from gen_outputs import generate_output
+import argparse
+import concurrent.futures
 import cv2
+import darknet.python.darknet as dn
+import glob
+import imutils
 import os
 import shutil
 import sys
+import threading
 import time
-import collections
-from clusterer import add_overlays
 
-def frame_time(fps, frame_n):
-    timestamp = frame_n / fps
-    hours = int(timestamp / 3600)
-    minutes = int(timestamp / 60) % 60
-    seconds = int(timestamp) % 60
-    ms = int(( timestamp - int(timestamp) ) * 1000)
-    return (hours, minutes, seconds, ms)
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
-def split_video(in_video, out_dir, fps):
-    vidcap = cv2.VideoCapture(in_video)
-    success, image = vidcap.read()
-    count = 0
-    time = None
-    
-    while success:
-        time = frame_time(fps, count)
-        cv2.imwrite("%s/%02d-%02d-%02d-%04d.jpg" % (out_dir, time[0], time[1], time[2], time[3]), image)
-        success, image = vidcap.read()
-        count += 1
+QUEUE_SIZE = 10
 
-def get_fps(in_video):
-    vidcap = cv2.VideoCapture(in_video)
-    return vidcap.get(cv2.CAP_PROP_FPS)
+def produce_frame(video_stream, img_queue, end_event):
+    """
+    @summary: Read frame from provided stream and save it to provided queue
+    """
+    while not end_event.is_set():
+        frame = video_stream.read()
+        img_queue.put(frame)  
 
-def combine_video(in_dir, fps, out_video):
-    images = [f for f in os.listdir(in_dir)]
-    img = cv2.imread("%s/%s" % (in_dir, images[0]))
-    size = (img.shape[1], img.shape[0])
-    out = cv2.VideoWriter(out_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
-    images.sort()
 
-    for image in images:
-        img = cv2.imread("%s/%s" % (in_dir, image))
-        out.write(img)
+def display_frame(display_queue, end_event):
+    while not end_event.is_set():
+        frame = display_queue.get()
+        cv2.imshow('frame',frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-    out.release()
 
-if len(sys.argv) < 2:
-    print("Pls provide input video name (with extension)")
-    quit()
+def main():
+    img_queue = DiscardQueue(QUEUE_SIZE)
+    display_queue = queue.Queue()
+    end_event = threading.Event()
+    vs = WebcamVideoStream(src=0).start()
 
-start_time = time.time()
-in_video = sys.argv[1]
-out_video = "%s_tagged.mp4" % (in_video.split('.')[0])
-timestamp_file = "%s_timestamps.csv" % (in_video.split('.')[0])
-in_dir = "tmp_in"
-trim_dir = "tmp_trim"
-out_dir = "tmp_out"
-lp_model="data/lp-detector/wpod-net_update1.h5"
-fps = get_fps(in_video)
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+    executor.submit(produce_frame, vs, img_queue, end_event)
+    executor.submit(display_frame, display_queue, end_event)
 
-if os.path.exists(in_dir):
-    print("Removing old tmp files")
-    shutil.rmtree(in_dir)
-    shutil.rmtree(trim_dir)
-    shutil.rmtree(out_dir)
-os.mkdir(in_dir)
-os.mkdir(trim_dir)
-os.mkdir(out_dir)
+    overlay_remain_time = 1  # how many seconds plates remain in the image
+    start_time = time.time()
+    #timestamp_file = "%s_timestamps.csv" % (in_video.split(".")[0])
+    lp_model = "data/lp-detector/wpod-net_update1.h5"
 
-print("Splitting video")
-split_video(in_video, in_dir, fps)
+    print("Processing images")
+    vehicle_threshold = 0.5
 
-print("Processing images")
-os.system("python vehicle-detection.py %s %s" % (in_dir, trim_dir))
-os.system("python license-plate-detection.py %s %s" % (trim_dir, lp_model))
-os.system("python license-plate-ocr.py %s" % (trim_dir))
+    vehicle_weights = "data/vehicle-detector/yolo-voc.weights"
+    vehicle_netcfg = "data/vehicle-detector/yolo-voc.cfg"
+    vehicle_dataset = "data/vehicle-detector/voc.data"
 
-print("Generating timestamp file...")
-os.system("python gen-outputs.py %s %s > %s" % (in_dir, trim_dir, timestamp_file))
+    print("Loading vehicle model...")
+    vehicle_net = dn.load_net(vehicle_netcfg, vehicle_weights, 0)
+    vehicle_meta = dn.load_meta(vehicle_dataset)
 
-# move actual output images to out_dir, leave trimmed in trim_dir
-os.system("mv %s/*_output.png %s" % (trim_dir, out_dir)) # I'm too lazy to do that in python
+    ocr_threshold = 0.4
+    ocr_weights = "data/ocr/ocr-net.weights"
+    ocr_netcfg = "data/ocr/ocr-net.cfg"
+    ocr_dataset = "data/ocr/ocr-net.data"
 
-add_overlays(out_dir, trim_dir, fps)
+    print("Loading OCR model...")
+    ocr_net = dn.load_net(ocr_netcfg, ocr_weights, 0)
+    ocr_meta = dn.load_meta(ocr_dataset)
 
-print("Combining video")
-combine_video(out_dir, fps, out_video)
+    lp_threshold = 0.5
+    wpod_net_path = lp_model
+    print("Loading wpod model...")
+    wpod_net = load_model(wpod_net_path)
 
-print("Removing tmp files")
-shutil.rmtree(in_dir)
-shutil.rmtree(trim_dir)
-shutil.rmtree(out_dir)
+    clusterer = Clusterer()
+    try:
+        while(True):
+            labels = []
+            platez = []
 
-print("Execution time: %fs" % (time.time() - start_time))
+            img = img_queue.get()
+
+            Icars, Lcars = vehicle_detect(
+                img, vehicle_net, vehicle_meta, vehicle_threshold
+            )
+
+            for i, car_img in enumerate(Icars):
+                # LPD
+                lp_img, lp_label, ok = license_detection(car_img, wpod_net, lp_threshold)
+                if not ok:
+                    print("label not detected")
+                    labels.append((Lcars[i], None, None))
+                    continue
+                # OCR
+                lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
+                labels.append((Lcars[i], lp_label, lp_str))
+                platez.append(Plate(lp_img, lp_str))
+
+            # TODO: timestamp
+            frame_ready = generate_output(img, labels)
+            clusterer.add_overlays(frame_ready, platez)
+            display_queue.put(frame_ready)
+    except KeyboardInterrupt:
+        pass
+
+    end_event.set() # finish
+    executor.shutdown(wait=False)
+    cv2.destroyAllWindows()
+    vs.stop()
+
+    print("Execution time: %fs" % (time.time() - start_time))
+
+
+if __name__ == "__main__":
+    main()

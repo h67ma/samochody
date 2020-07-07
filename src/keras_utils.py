@@ -92,6 +92,8 @@ def reconstruct(Iorig, I, Y, out_size, threshold=.9):
 	
 
 def detect_lp(model, I, max_dim, net_step, out_size, threshold):
+	hi = 0
+
 	min_dim_img = min(I.shape[:2])
 	factor = float(max_dim)/min_dim_img
 

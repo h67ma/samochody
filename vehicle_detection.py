@@ -8,7 +8,35 @@ from src.label import Label, lwrite
 from os.path import splitext, basename, isdir
 from os import makedirs
 from src.utils import crop_region, image_files_from_folder
-from darknet.python.darknet import detect
+from darknet.python.darknet import detect, detect_2_0
+
+def vehicle_detect(img, vehicle_net, vehicle_meta, vehicle_threshold):
+	detected, _ = detect(vehicle_net, vehicle_meta, img ,thresh=vehicle_threshold)
+
+	detected = [r for r in detected if r[0] in ['car','bus']]
+
+	Lcars = []
+	Icars = []
+	if len(detected):
+		Iorig = img
+		WH = np.array(Iorig.shape[1::-1],dtype=float)
+
+		print('\t\t%d cars found' % len(detected))
+
+		for i,r in enumerate(detected):
+			cx,cy,w,h = (np.array(r[2])/np.concatenate((WH,WH))).tolist()
+			tl = np.array([cx - w/2., cy - h/2.])
+			br = np.array([cx + w/2., cy + h/2.])
+			label = Label(0, tl, br)
+			Icar = crop_region(Iorig,label)
+
+			Lcars.append(label)
+
+			#cv2.imwrite('%s/%s_%dcar.png' % (output_dir, bname, i), Icar)
+			Icars.append(Icar)
+
+		#lwrite('%s/%s_cars.txt' % (output_dir,bname), Lcars)
+	return Icars, Lcars
 
 
 if __name__ == '__main__':

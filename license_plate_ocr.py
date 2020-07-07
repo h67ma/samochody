@@ -6,11 +6,28 @@ import darknet.python.darknet as dn
 
 from os.path import splitext, basename
 from glob import glob
-from darknet.python.darknet import detect
+from darknet.python.darknet import detect, detect_2_0
 from src.label import dknet_label_conversion
 from src.utils import nms
 
-MIN_PLATE_LETTERS = 6
+def ocr(img, ocr_net, ocr_meta, ocr_threshold):
+	print('OCR detecting...')
+	detected, (width, height) = detect_2_0(ocr_net, ocr_meta, img, thresh=ocr_threshold, nms=None)
+	print('OCR detected')
+	if len(detected):
+		L = dknet_label_conversion(detected, width, height)
+		L = nms(L,.45)
+
+		L.sort(key=lambda x: x.tl()[0])
+		lp_str = ''.join([chr(l.cl()) for l in L])
+		print('\t\tLP: %s' % lp_str)
+		return lp_str
+	else:
+		print('No characters found')
+		return None
+
+
+
 
 if __name__ == '__main__':
 	try:
@@ -41,17 +58,15 @@ if __name__ == '__main__':
 				L = dknet_label_conversion(detected, width, height)
 				L = nms(L,.45)
 
-				L.sort(key=lambda x: x.tl()[0])  # sort by position in image
+				L.sort(key=lambda x: x.tl()[0])
 				lp_str = ''.join([chr(l.cl()) for l in L])
 
-				if len(lp_str) >= MIN_PLATE_LETTERS:
-					with open('%s/%s_str.txt' % (output_dir, bname), 'w') as f:
-						f.write(lp_str + '\n')
-					print('\t\tLP: %s' % lp_str)
-				else:
-					print('\t\tLP too short')
+				with open('%s/%s_str.txt' % (output_dir, bname),'w') as f:
+					f.write(lp_str + '\n')
+
+				print('\t\tLP: %s' % lp_str)
 			else:
-				print('\t\tNo characters found')
+				print('No characters found')
 	except:
 		traceback.print_exc()
 		sys.exit(1)

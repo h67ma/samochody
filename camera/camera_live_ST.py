@@ -7,7 +7,6 @@ cap = cv2.VideoCapture(0)
 
 fps = FPS().start()
 while(True):
-    fps = FPS().start()
 
     # Capture frame-by-frame
     ret, frame = cap.read()
