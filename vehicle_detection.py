@@ -15,8 +15,6 @@ def vehicle_detect(img, vehicle_net, vehicle_meta, vehicle_threshold):
 
 	detected = [r for r in detected if r[0] in ['car','bus']]
 
-	print('\t\t%d cars found' % len(detected))
-
 	Lcars = []
 	Icars = []
 	if len(detected):
