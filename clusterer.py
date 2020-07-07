@@ -41,10 +41,7 @@ class Clusterer:
         put_text(img, "curr", 400, 30)
         put_text(img, "total", 480, 30)
 
-        base_h, base_w, _ = img.shape
-        if base_h < PLATE_H or base_w < PLATE_W:
-            print("Input image too small: %dx%d. That's bad juju!" % (base_h, base_w))
-            return
+        base_h, _, _ = img.shape
 
         offsety = 40
         offsetx = 0
@@ -55,7 +52,7 @@ class Clusterer:
             put_text(img, str(plate.occured), offsetx + PLATE_W + 160, offsety + MID_PLATE_TEXT)
             put_text(img, str(self.total_detections[plate_text]), offsetx + PLATE_W + 240, offsety + MID_PLATE_TEXT)
             offsety += PLATE_H
-            if offsety >= base_h:
+            if offsety + PLATE_H >= base_h:
                 offsety = 0
                 offsetx += PLATE_W
 
