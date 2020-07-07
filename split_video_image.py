@@ -39,6 +39,7 @@ def produce_frame(video_stream, img_queue, end_event):
 def display_frame(display_queue, end_event):
     while not end_event.is_set():
         frame = display_queue.get()
+        frame = imutils.resize(frame, width=600)
         cv2.imshow('frame',frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
