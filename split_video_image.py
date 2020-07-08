@@ -8,6 +8,7 @@ from src.utils import image_files_from_folder
 from src.collections_utils import DiscardQueue
 from vehicle_detection import vehicle_detect
 from gen_outputs import generate_output
+from drawing_utils import put_text
 import argparse
 import concurrent.futures
 import cv2
@@ -26,6 +27,7 @@ except ImportError:
     import Queue as queue
 
 QUEUE_SIZE = 10
+FRAME_PER_FPS = 20
 
 def produce_frame(video_stream, img_queue, end_event):
     """
@@ -37,8 +39,12 @@ def produce_frame(video_stream, img_queue, end_event):
 
 
 def display_frame(display_queue, end_event):
+    fps_queue = DiscardList(FRAME_PER_FPS)
     while not end_event.is_set():
         frame = display_queue.get()
+        fps_queue.put(time.time())
+        height, width, _ = frame.shape
+        put_text(frame, str(fps_queue.get_avg()), 30, width - 50)   # top right
         frame = imutils.resize(frame, width=600)
         cv2.imshow('frame',frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):

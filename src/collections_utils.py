@@ -13,3 +13,16 @@ class DiscardQueue(queue.Queue, object):
         if self.qsize() + 1 >= self.maxsize:
             super(DiscardQueue, self).get()  # remove from front
         super(DiscardQueue, self).put(item)
+
+
+class DiscardList(list):
+    def __init__(self, size):
+        self.size = size
+
+    def append(self, item):
+        if self.__len__() >= self.size:
+            super(DiscardList, self).pop(0)
+        super(DiscardList, self).append(item)
+
+    def get_avg(self):
+        return sum(self)/len(self)
