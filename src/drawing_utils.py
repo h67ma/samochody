@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+COLOR_GREEN = (0, 255, 0)
 
 def draw_label(I,l,color=(255,0,0),thickness=1):
 	wh = np.array(I.shape[1::-1]).astype(float)
@@ -45,3 +46,10 @@ def write2img(Img, label, strg, txt_color=(0, 0, 0), bg_color=(255, 255, 255), f
 
 	cv2.rectangle(Img, tpl(tl_corner), tpl(br_corner), bg_color, -1)
 	cv2.putText(Img, strg, tpl(bl_corner), font,font_size, txt_color,3)
+
+
+"""
+wrapper for cv2 put text thing
+"""
+def put_text(img, text, x, y):
+	cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_GREEN, 2)

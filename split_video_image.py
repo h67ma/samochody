@@ -61,7 +61,6 @@ def main():
     executor.submit(produce_frame, vs, img_queue, end_event)
     executor.submit(display_frame, display_queue, end_event)
 
-    overlay_remain_time = 1  # how many seconds plates remain in the image
     start_time = time.time()
     #timestamp_file = "%s_timestamps.csv" % (in_video.split(".")[0])
     lp_model = "data/lp-detector/wpod-net_update1.h5"

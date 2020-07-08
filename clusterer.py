@@ -1,8 +1,8 @@
 import glob
 import os
 import cv2
+from drawing_utils import put_text
 
-FONT_GREEN = (0, 255, 0)
 FRAMES_DISPLAYED = 30
 
 # can be read from img but what's the point
@@ -21,12 +21,6 @@ class Plate:
     def __init__(self, img, text):
         self.img = img
         self.text = text
-
-"""
-wrapper for cv2 put text thing
-"""
-def put_text(img, text, x, y):
-    cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, FONT_GREEN, 2)
 
 class Clusterer:
     def __init__(self):
