@@ -11,14 +11,13 @@ from src.label import lread, Label, readShapes
 from pdb import set_trace as pause
 
 def save_timestamp(timestamp_str, timestamp_file):
-	timestamp_file.write("%s%s\n" % (datetime.datetime.now(), timestamp_str))
+	timestamp_file.write("%s;%s\n" % (datetime.datetime.now(), timestamp_str))
 
 
 def generate_output(original_frame, labels, timestamp_file):
 
 	YELLOW = (  0,255,255)
 	RED = (  0,  0,255)
-	timestamp_str = ""
 		
 	if labels:
 		for i,label in enumerate(labels):
@@ -36,10 +35,8 @@ def generate_output(original_frame, labels, timestamp_file):
 				if lp_str:
 					llp = Label(0,tl=pts.min(1),br=pts.max(1))
 					write2img(original_frame,llp,lp_str)
-					timestamp_str += ';%s' % lp_str
+					save_timestamp(lp_str, timestamp_file)
 
-	if timestamp_str:
-		save_timestamp(timestamp_str, timestamp_file)
 	return original_frame
 
 

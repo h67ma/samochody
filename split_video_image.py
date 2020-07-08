@@ -95,7 +95,7 @@ def main():
     wpod_net = load_model(wpod_net_path)
 
     clusterer = Clusterer()
-    timestamp_file = open("timestamp.txt","a+")
+    timestamp_file = open("timestamp.csv","a+")
     try:
         while(True):
             labels = []
