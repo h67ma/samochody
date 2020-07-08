@@ -25,4 +25,6 @@ class DiscardList(list):
         super(DiscardList, self).append(item)
 
     def get_avg(self):
-        return sum(self)/len(self)
+        if len(self) <= 1:
+            return 1
+        return (self[-1] - self[0])/(len(self) - 1) 

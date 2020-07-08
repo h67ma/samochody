@@ -1,7 +1,7 @@
 import glob
 import os
 import cv2
-from drawing_utils import put_text
+from src.drawing_utils import put_text
 
 FRAMES_DISPLAYED = 30
 

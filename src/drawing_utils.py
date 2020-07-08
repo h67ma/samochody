@@ -51,5 +51,5 @@ def write2img(Img, label, strg, txt_color=(0, 0, 0), bg_color=(255, 255, 255), f
 """
 wrapper for cv2 put text thing
 """
-def put_text(img, text, x, y):
-	cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_GREEN, 2)
+def put_text(img, text, x, y, font_size=1):
+	cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, font_size, COLOR_GREEN, 2)

@@ -3,18 +3,19 @@ from imutils.video import WebcamVideoStream
 from license_plate_ocr import ocr
 from license_plate_detection import license_detection
 from os.path import basename, splitext
+from src.drawing_utils import put_text
 from src.keras_utils import load_model
 from src.utils import image_files_from_folder
-from src.collections_utils import DiscardQueue
+from src.collections_utils import DiscardQueue, DiscardList
 from vehicle_detection import vehicle_detect
 from gen_outputs import generate_output
-from drawing_utils import put_text
 import argparse
 import concurrent.futures
 import cv2
 import darknet.python.darknet as dn
 import glob
 import imutils
+import math
 import os
 import shutil
 import sys
@@ -27,7 +28,7 @@ except ImportError:
     import Queue as queue
 
 QUEUE_SIZE = 10
-FRAME_PER_FPS = 20
+FRAME_PER_FPS = 5
 
 def produce_frame(video_stream, img_queue, end_event):
     """
@@ -42,16 +43,18 @@ def display_frame(display_queue, end_event):
     fps_queue = DiscardList(FRAME_PER_FPS)
     while not end_event.is_set():
         frame = display_queue.get()
-        fps_queue.put(time.time())
+        fps_queue.append(time.time())
         height, width, _ = frame.shape
-        put_text(frame, str(fps_queue.get_avg()), 30, width - 50)   # top right
-        frame = imutils.resize(frame, width=600)
+        put_text(frame, str(int(math.ceil(1/fps_queue.get_avg()))), width-80, 50, 2)   # top right
+        frame = imutils.resize(frame, width=800)
         cv2.imshow('frame',frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
 
 def main():
+
+
     img_queue = DiscardQueue(QUEUE_SIZE)
     display_queue = queue.Queue()
     end_event = threading.Event()
