@@ -121,7 +121,6 @@ def main():
                     platez.append(Plate(lp_img, lp_str))
                 else:
                     labels.append((Lcars[i], lp_label, None))
-                    platez.append(Plate(lp_img, None))
 
             # TODO: timestamp
             frame_ready = generate_output(img, labels, timestamp_file)
