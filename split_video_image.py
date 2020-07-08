@@ -52,6 +52,15 @@ def display_frame(display_queue, end_event):
             break
 
 
+def plate_legit(lp_str):
+    if not lp_str:
+        return False
+    if len(lp_str) < 6:
+        return False
+
+    return True
+
+
 def main():
 
 
@@ -94,6 +103,7 @@ def main():
     wpod_net = load_model(wpod_net_path)
 
     clusterer = Clusterer()
+    timestamp_file = open("timestamp.csv","a+")
     try:
         while(True):
             labels = []
@@ -114,11 +124,14 @@ def main():
                     continue
                 # OCR
                 lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
-                labels.append((Lcars[i], lp_label, lp_str))
-                platez.append(Plate(lp_img, lp_str))
+                if plate_legit(lp_str):
+                    labels.append((Lcars[i], lp_label, lp_str))
+                    platez.append(Plate(lp_img, lp_str))
+                else:
+                    labels.append((Lcars[i], lp_label, None))
 
             # TODO: timestamp
-            frame_ready = generate_output(img, labels)
+            frame_ready = generate_output(img, labels, timestamp_file)
             clusterer.add_overlays(frame_ready, platez)
             display_queue.put(frame_ready)
     except KeyboardInterrupt:
@@ -128,6 +141,7 @@ def main():
     executor.shutdown(wait=False)
     cv2.destroyAllWindows()
     vs.stop()
+    timestamp_file.close()
 
     print("Execution time: %fs" % (time.time() - start_time))
 
