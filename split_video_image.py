@@ -46,9 +46,12 @@ def display_frame(display_queue, end_event):
 
 
 def plate_legit(lp_str):
-    if lp_str and len(lp_str) >= 6:
-        return True
-    return False
+    if not lp_str:
+        return False
+    if len(lp_str) < 6:
+        return False
+
+    return True
 
 
 def main():
