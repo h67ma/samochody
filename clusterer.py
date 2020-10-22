@@ -1,6 +1,9 @@
 import glob
 import os
 import cv2
+import numpy
+import sklearn.cluster
+import distance
 from src.drawing_utils import put_text
 
 FRAMES_DISPLAYED = 30
@@ -78,3 +81,22 @@ class Clusterer:
 				overlay.frames_left -= 1
 				if overlay.frames_left <= 0:
 					del self.current_overlays[plate_text]
+
+	@staticmethod
+	def _make_clusters(words):
+		"""
+		stolen from: https://stats.stackexchange.com/questions/123060/clustering-a-long-list-of-strings-words-into-similarity-groups
+		words: array of strings to be clustered
+		returns: array of clusters (arrays)
+		"""
+		words = numpy.asarray(words) # so that indexing with a list will work
+		lev_similarity = -1 * numpy.array([[distance.levenshtein(w1, w2) for w1 in words] for w2 in words])
+
+		affprop = sklearn.cluster.AffinityPropagation(affinity="precomputed", damping=0.5)
+		affprop.fit(lev_similarity)
+		clusters = []
+		for cluster_id in numpy.unique(affprop.labels_):
+			# exemplar = words[affprop.cluster_centers_indices_[cluster_id]] # one of the words
+			cluster_members = numpy.unique(words[numpy.nonzero(affprop.labels_ == cluster_id)])
+			clusters.append(cluster_members.tolist())
+		return clusters
