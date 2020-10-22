@@ -1,4 +1,5 @@
-from clusterer import Clusterer, Plate
+from clusterer import Clusterer
+from debug_platez_overlay import DebugPlatezOverlay, Plate
 from imutils.video import WebcamVideoStream
 from license_plate_ocr import ocr
 from license_plate_detection import license_detection
@@ -102,12 +103,14 @@ def main():
     print("Loading wpod model...")
     wpod_net = load_model(wpod_net_path)
 
+    debug_overlay = DebugPlatezOverlay()
     clusterer = Clusterer()
     timestamp_file = open("timestamp.csv","a+")
     try:
         while(True):
             labels = []
             platez = []
+            platez_strs = []
 
             img = img_queue.get()
 
@@ -127,12 +130,15 @@ def main():
                 if plate_legit(lp_str):
                     labels.append((Lcars[i], lp_label, lp_str))
                     platez.append(Plate(lp_img, lp_str))
+                    platez_strs.append(lp_str)
                 else:
                     labels.append((Lcars[i], lp_label, None))
 
             # TODO: timestamp
             frame_ready = generate_output(img, labels, timestamp_file)
-            clusterer.add_overlays(frame_ready, platez)
+            debug_overlay.add_overlays(frame_ready, platez)
+            clusterer.add_platez(platez_strs)
+            # TODO call every x frames, not every frame: clusterer.overlay_clusters(frame_ready)
             display_queue.put(frame_ready)
     except KeyboardInterrupt:
         pass
