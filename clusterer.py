@@ -3,6 +3,8 @@ from sklearn.cluster import AffinityPropagation
 import distance
 from src.drawing_utils import put_text
 
+TEXT_LINE_HEIGHT = 50
+
 class Clusterer:
 	def __init__(self):
 		self.all_platez = []
@@ -11,16 +13,22 @@ class Clusterer:
 		"""
 		draws all current clusters on img (in place)
 		"""
-		put_text(img, "TODO", 0, 30)
+		current_y = 0
+		for cluster in self._make_clusters():
+			platez_in_cluster = " ".join(cluster)
+			put_text(img, platez_in_cluster, 0, current_y)
+			current_y += TEXT_LINE_HEIGHT
 
 	def add_platez(self, platez):
 		"""
 		adds platez to list of all known platez (if plate is not there)
 		platez: new platez to add, array of strings
 		"""
-		# TODO
+		for plate in platez:
+			if plate not in self.all_platez:
+				self.all_platez.append(plate)
 
-	def make_clusters(self):
+	def _make_clusters(self):
 		"""
 		stolen from: https://stats.stackexchange.com/questions/123060/clustering-a-long-list-of-strings-words-into-similarity-groups
 		words: array of strings to be clustered
