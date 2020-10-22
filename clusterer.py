@@ -11,6 +11,7 @@ FRAMES_DISPLAYED = 30
 # can be read from img but what's the point
 PLATE_W = 240
 PLATE_H = 80
+
 MID_PLATE_TEXT = 50
 INITIAL_Y_OFFSET = 40
 
@@ -30,10 +31,10 @@ class Clusterer:
 		self.current_overlays = {}  # {"plate text": Overlay(), ...}
 		self.total_detections = {}  # {"plate text": 123, ...}
 
-	"""
-	adds all current overlays to img
-	"""
 	def _overlay_img(self, img):
+		"""
+		adds all current overlays to img
+		"""
 		put_text(img, "img", 0, 30)
 		put_text(img, "text", 240, 30)
 		put_text(img, "curr", 400, 30)
@@ -57,12 +58,12 @@ class Clusterer:
 					print("Can't fit all those platez in the image")
 					return
 
-	"""
-	adds overlay to img with detected plates. plates detected earlier are also shown (for a while)
-	img: current image
-	platez: list of Plate() (plates and detected text)
-	"""
 	def add_overlays(self, img, platez):
+		"""
+		adds overlay to img with detected plates. plates detected earlier are also shown (for a while)
+		img: current image
+		platez: list of Plate() (plates and detected text)
+		"""
 		for plate in platez:
 			if plate.text in self.current_overlays:
 				self.current_overlays[plate.text].img = plate.img
