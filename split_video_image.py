@@ -104,7 +104,7 @@ def main():
     print("Loading wpod model...")
     wpod_net = load_model(wpod_net_path)
 
-    debug_overlay = DebugPlatezOverlay()
+    #debug_overlay = DebugPlatezOverlay()
     clusterer = Clusterer()
     timestamp_file = open("timestamp.csv","a+")
     i = 0
@@ -138,7 +138,7 @@ def main():
 
             # TODO: timestamp
             frame_ready = generate_output(img, labels, timestamp_file)
-            debug_overlay.add_overlays(frame_ready, platez)
+            #debug_overlay.add_overlays(frame_ready, platez)
             clusterer.add_platez(platez_strs)
             clusterer.overlay_clusters(frame_ready)
             i += 1
