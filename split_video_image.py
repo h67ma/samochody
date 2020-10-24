@@ -30,6 +30,7 @@ except ImportError:
 
 QUEUE_SIZE = 10
 FRAME_PER_FPS = 5
+CLUSTER_EVERY_X_FRAMES = 30
 
 def produce_frame(video_stream, img_queue, end_event):
     """
@@ -141,7 +142,7 @@ def main():
             clusterer.add_platez(platez_strs)
             clusterer.overlay_clusters(frame_ready)
             i += 1
-            if i >= 60:
+            if i >= CLUSTER_EVERY_X_FRAMES:
                 clusterer.make_clusters()
                 i = 0
             display_queue.put(frame_ready)

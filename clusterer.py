@@ -14,9 +14,9 @@ class Clusterer:
 		"""
 		draws all current clusters on img (in place)
 		"""
-		current_y = 0
+		current_y = TEXT_LINE_HEIGHT
 		for cluster in self.clusters:
-			platez_in_cluster = "\t".join(cluster)
+			platez_in_cluster = "    ".join(cluster)
 			put_text(img, platez_in_cluster, 0, current_y)
 			current_y += TEXT_LINE_HEIGHT
 
