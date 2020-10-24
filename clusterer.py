@@ -36,6 +36,8 @@ class Clusterer:
 		words: array of strings to be clustered
 		returns: array of clusters (arrays)
 		"""
+		if len(self.all_platez) < 1:
+			return
 		words = numpy.asarray(self.all_platez) # so that indexing with a list will work
 		lev_similarity = -1 * numpy.array([[distance.levenshtein(w1, w2) for w1 in words] for w2 in words])
 
