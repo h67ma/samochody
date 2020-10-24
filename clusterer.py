@@ -8,16 +8,18 @@ TEXT_LINE_HEIGHT = 50
 class Clusterer:
 	def __init__(self):
 		self.all_platez = []
+		self.clusters = []
 
 	def overlay_clusters(self, img):
 		"""
 		draws all current clusters on img (in place)
 		"""
 		current_y = 0
-		for cluster in self._make_clusters():
+		for cluster in self.clusters:
 			platez_in_cluster = "\t".join(cluster)
 			put_text(img, platez_in_cluster, 0, current_y)
 			current_y += TEXT_LINE_HEIGHT
+
 
 	def add_platez(self, platez):
 		"""
@@ -28,7 +30,7 @@ class Clusterer:
 			if plate not in self.all_platez:
 				self.all_platez.append(plate)
 
-	def _make_clusters(self):
+	def make_clusters(self):
 		"""
 		stolen from: https://stats.stackexchange.com/questions/123060/clustering-a-long-list-of-strings-words-into-similarity-groups
 		words: array of strings to be clustered
@@ -44,4 +46,4 @@ class Clusterer:
 			# exemplar = words[affprop.cluster_centers_indices_[cluster_id]] # one of the words
 			cluster_members = numpy.unique(words[numpy.nonzero(affprop.labels_ == cluster_id)])
 			clusters.append(cluster_members.tolist())
-		return clusters
+		self.clusters = clusters

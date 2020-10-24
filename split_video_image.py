@@ -106,6 +106,7 @@ def main():
     debug_overlay = DebugPlatezOverlay()
     clusterer = Clusterer()
     timestamp_file = open("timestamp.csv","a+")
+    i = 0
     try:
         while(True):
             labels = []
@@ -138,7 +139,11 @@ def main():
             frame_ready = generate_output(img, labels, timestamp_file)
             debug_overlay.add_overlays(frame_ready, platez)
             clusterer.add_platez(platez_strs)
-            # TODO call every x frames, not every frame: clusterer.overlay_clusters(frame_ready)
+            clusterer.overlay_clusters(frame_ready)
+            i += 1
+            if i >= 60:
+                clusterer.make_clusters()
+                i = 0
             display_queue.put(frame_ready)
     except KeyboardInterrupt:
         pass
