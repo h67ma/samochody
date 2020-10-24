@@ -49,3 +49,8 @@ class Clusterer:
 			cluster_members = numpy.unique(words[numpy.nonzero(affprop.labels_ == cluster_id)])
 			clusters.append(cluster_members.tolist())
 		self.clusters = clusters
+
+	def debug_dump(self):
+		with open("all_platez.txt", "w") as f:
+			for plate in self.all_platez:
+				f.write(plate + "\n")
