@@ -15,7 +15,7 @@ class Clusterer:
 		"""
 		current_y = 0
 		for cluster in self._make_clusters():
-			platez_in_cluster = " ".join(cluster)
+			platez_in_cluster = "\t".join(cluster)
 			put_text(img, platez_in_cluster, 0, current_y)
 			current_y += TEXT_LINE_HEIGHT
 
