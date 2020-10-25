@@ -14,8 +14,10 @@ from src.label import Shape, writeShapes
 def adjust_pts(pts,lroi):
 	return pts*lroi.wh().reshape((2,1)) + lroi.tl().reshape((2,1))
 
-def license_detection(Ivehicle, wpod_net, lp_threshold):
-	try:
+def license_detection(Ivehicles, wpod_net, lp_threshold):
+	bound_dims = []
+	for i in range(0, len(Ivehicles)):
+		Ivehicle = Ivehicles[i]
 		ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
 		side = int(ratio*288.)
 		bound_dim = min(side + (side%(2**4)), 608)
@@ -25,22 +27,29 @@ def license_detection(Ivehicle, wpod_net, lp_threshold):
 
 		# TODO: na co ta konwersja???? useless
 		Ivehicle = Ivehicle.astype('uint8')
-		Llp, LlpImgs, _ = detect_lp(wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), lp_threshold)
-		if len(LlpImgs):
-			Ilp = LlpImgs[0]
-			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
-			Ilp = cv2.cvtColor(Ilp, cv2.COLOR_GRAY2BGR)
+		Ivehicles[i] = im2single(Ivehicle)
+		bound_dims.append(bound_dim)
+	# Llp, LlpImgs, _ = 
+	license_plates = detect_lp(wpod_net, Ivehicles, bound_dims, 2**4, (240, 80), lp_threshold)
+	ret = []
+	for license_plate in license_plates:
+		try:
+			if len(license_plate["LlpImgs"]):
+				Ilp = license_plate["LlpImgs"][0]
+				Ilp = cv2.cvtColor(Ilp, cv2.COLOR_BGR2GRAY)
+				Ilp = cv2.cvtColor(Ilp, cv2.COLOR_GRAY2BGR)
 
-			s = Shape(Llp[0].pts)
-			return Ilp*255., [s], True
-		else:
-			return None, None, False
-	except Exception as e:
-		print("Exception:")
-		print('======')
-		print(e)
-		print('======')
-		return None, None, False
+				s = Shape(license_plate["Llp"][0].pts)
+				ret.append((Ilp*255., [s], True))
+			else:
+				ret.append((None, None, False))
+		except Exception as e:
+			print("Exception:")
+			print('======')
+			print(e)
+			print('======')
+			ret.append((None, None, False))
+	return ret
 
 
 if __name__ == '__main__':
