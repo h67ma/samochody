@@ -31,8 +31,7 @@ class Clusterer:
 		words = numpy.asarray(list(self.all_platez.keys())) # so that indexing with a list will work
 		lev_similarity = -1 * numpy.array([[distance.levenshtein(w1, w2) for w1 in words] for w2 in words])
 
-		affprop = AffinityPropagation(affinity="precomputed", random_state=None, preference=-MAX_DISTANCE_INSIDE_CLUSTER)
-		print(affprop.preference)
+		affprop = AffinityPropagation(affinity="precomputed", preference=-MAX_DISTANCE_INSIDE_CLUSTER)
 		affprop.fit(lev_similarity)
 		clusters = {}
 		for cluster_id in numpy.unique(affprop.labels_):
@@ -56,4 +55,4 @@ class Clusterer:
 						distances += " %d" % dist
 					print("\t%dx %s: %s" % (self.all_platez[plate], plate, distances))
 				else:
-					print("\t%dx%s" % (self.all_platez[plate], plate))
+					print("\t%dx %s" % (self.all_platez[plate], plate))
