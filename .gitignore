@@ -7,5 +7,6 @@ samples/
 output/
 .env/
 .vscode/
-.txt
+*.txt
 .csv
+*.jpg
