@@ -140,11 +140,10 @@ def main():
             frame_ready = generate_output(img, labels, timestamp_file)
             #debug_overlay.add_overlays(frame_ready, platez)
             clusterer.add_platez(platez_strs)
-            clusterer.overlay_clusters(frame_ready)
             i += 1
             if i >= CLUSTER_EVERY_X_FRAMES:
                 clusterer.make_clusters()
-                clusterer.debug_dump()
+                clusterer.dump_clusters(False)
                 i = 0
             display_queue.put(frame_ready)
     except KeyboardInterrupt:
