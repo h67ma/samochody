@@ -62,6 +62,8 @@ def plate_legit(lp_str):
 
     return True
 
+def time_now_ms():
+    return int(round(time.time() * 1000))
 
 def main():
 
@@ -108,8 +110,17 @@ def main():
     clusterer = Clusterer()
     timestamp_file = open("timestamp.csv","a+")
     i = 0
+    times = []
     try:
-        while(True):
+        #while(True):
+        for i in range(0, 200):
+            start = time_now_ms()
+            measurement = {
+                "CD": 0,
+                "LPD": 0,
+                "OCR": 0,
+            }
+
             labels = []
             platez = []
             platez_strs = []
@@ -119,26 +130,12 @@ def main():
             Icars, Lcars = vehicle_detect(
                 img, vehicle_net, vehicle_meta, vehicle_threshold
             )
-
-            # for i, car_img in enumerate(Icars):
-            #     # LPD
-            #     lp_img, lp_label, ok = license_detection(car_img, wpod_net, lp_threshold)
-            #     if not ok:
-            #         print("label not detected")
-            #         labels.append((Lcars[i], None, None))
-            #         continue
-            #     # OCR
-            #     lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
-            #     if plate_legit(lp_str):
-            #         labels.append((Lcars[i], lp_label, lp_str))
-            #         platez.append(Plate(lp_img, lp_str))
-            #         platez_strs.append(lp_str)
-            #     else:
-            #         labels.append((Lcars[i], lp_label, None))
+            measurement["CD"] = time_now_ms() - start
 
             # LPD
             if Icars:
                 license_plates = license_detection(Icars, wpod_net, lp_threshold)
+                measurement["LPD"] = time_now_ms() - measurement["CD"] - start
                 # OCR
                 for i in range(0, len(license_plates)):
                     lp = license_plates[i]
@@ -147,12 +144,14 @@ def main():
                         labels.append((Lcars[i], None, None))
                         continue
                     lp_str = ocr(lp[0], ocr_net, ocr_meta, ocr_threshold)
-                    if plate_legit(lp_str):
-                        labels.append((Lcars[i], lp[1], lp_str))
-                        platez.append(Plate(lp[0], lp_str))
-                        platez_strs.append(lp_str)
-                    else:
-                        labels.append((Lcars[i], lp[1], None))
+                    # if plate_legit(lp_str):
+                    #     labels.append((Lcars[i], lp[1], lp_str))
+                    #     platez.append(Plate(lp[0], lp_str))
+                    #     platez_strs.append(lp_str)
+                    # else:
+                    #     labels.append((Lcars[i], lp[1], None))
+                measurement["OCR"] = time_now_ms() - measurement["LPD"] - start
+                times.append(measurement)
 
 
 
@@ -175,6 +174,10 @@ def main():
     cv2.destroyAllWindows()
     vs.stop()
     timestamp_file.close()
+
+    for i, _time in enumerate(times):
+        print("Frame #%d" % i)
+        print("\tCar Detection: %d\tLPD: %d\t OCR: %d" % (_time["CD"], _time["LPD"], _time["OCR"]))
 
     print("Execution time: %fs" % (time.time() - start_time))
 
