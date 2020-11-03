@@ -23,7 +23,6 @@ class Clusterer:
 	def make_clusters(self):
 		"""
 		stolen from: https://stats.stackexchange.com/questions/123060/clustering-a-long-list-of-strings-words-into-similarity-groups
-		words: array of strings to be clustered
 		returns: array of clusters (arrays)
 		"""
 		if len(self.all_platez) < 1:
@@ -41,10 +40,12 @@ class Clusterer:
 		self.clusters = clusters
 
 	def dump_platez(self):
+		"""prints all detected (unique) platez"""
 		for plate in self.all_platez:
 			print(plate)
 
-	def dump_clusters(self, show_distances):
+	def dump_clusters(self, show_distances=False):
+		"""show_distances: will display distance matrix if True"""
 		for exemplar, cluster in self.clusters.items():
 			print(exemplar + ":")
 			for plate in cluster:

@@ -143,7 +143,7 @@ def main():
             i += 1
             if i >= CLUSTER_EVERY_X_FRAMES:
                 clusterer.make_clusters()
-                clusterer.dump_clusters(False)
+                clusterer.dump_clusters()
                 i = 0
             display_queue.put(frame_ready)
     except KeyboardInterrupt:
