@@ -1,7 +1,7 @@
 import numpy
 from sklearn.cluster import AffinityPropagation
 import distance
-from queue import deque
+from Queue import deque
 
 MAX_DISTANCE_INSIDE_CLUSTER = 4
 DISP_LAST_CNT = 10
