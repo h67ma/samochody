@@ -98,12 +98,18 @@ def detect_lp(model, Images, max_dims, net_step, out_size, threshold):
 		min_dim_img = min(I.shape[:2])
 		factor = float(max_dims[i])/min_dim_img
 
-		# w,h = (np.array(I.shape[1::-1], dtype=float)*factor).astype(int).tolist()
-		# w += (w%net_step!=0)*(net_step - w%net_step)
-		# h += (h%net_step!=0)*(net_step - h%net_step)
-		w = 320
-		h = 160
-		Iresized = cv2.resize(I, (w, h))
+		# img_w,img_h = (np.array(I.shape[1::-1], dtype=float)*factor).astype(int).tolist()
+		# img_w += (img_w%net_step!=0)*(net_step - img_w%net_step) 
+		# img_h += (img_h%net_step!=0)*(net_step - img_h%net_step)
+
+		# filename = "sizes.txt"
+
+		# with open(filename, 'a+') as f:
+		# 	f.write("{}x{}\n".format(img_w,img_h))
+
+		w = 336
+		h = 368
+		Iresized = cv2.resize(I, (w , h))
 
 		T = Iresized.copy()
 		# T = T.reshape((T.shape[0], T.shape[1], T.shape[2]))
