@@ -1,23 +1,29 @@
 import numpy
 from sklearn.cluster import AffinityPropagation
 import distance
+import cv2
 from Queue import deque
 
-MAX_DISTANCE_INSIDE_CLUSTER = 4
+MAX_DISTANCE_INSIDE_CLUSTER = 3
 DISP_LAST_CNT = 10
 
+class Plate:
+	def __init__(self, first_img):
+		self.detections_cnt = 1
+		self.imgs = []
+		if first_img != None:
+			self.imgs.append(first_img)
+
+
 class Clusterer:
-	def __init__(self):
-		self._all_platez = {} # {"plate txt": <plate cnt>, ...}
+	def __init__(self, save_images=False):
+		"""
+		save_images: if True, Clusterer will save plate images to disk, otherwise will ignore them.
+		"""
+		self._all_platez = {} # {"plate txt": Plate, ...}
 		self._clusters = {} # {"exemplar": ["plate 1", "plate 2", ...], ...}
 		self._last_platez = deque(maxlen=DISP_LAST_CNT)
-
-
-	def get_clusters(self):
-		"""
-		Returns clusters dictionary.
-		"""
-		return self._clusters
+		self._save_images = save_images
 
 
 	def _find_best_cluster_plate_in_all_clusters(self, query_plate):
@@ -43,7 +49,7 @@ class Clusterer:
 		"""
 		couts_dict = {}
 		for plate in platez:
-			couts_dict[plate] = self._all_platez[plate]
+			couts_dict[plate] = self._all_platez[plate].detections_cnt
 		return max(couts_dict, key=couts_dict.get)
 
 
@@ -67,14 +73,18 @@ class Clusterer:
 	def add_platez(self, platez):
 		"""
 		Adds platez to list of all known platez (if plate is not there).
-		platez: new platez to add, array of strings
+		platez: new platez to add, array of tuples (plate_text, plate_image)
 		"""
 		for plate in platez:
-			self._last_platez.append(plate)
-			if plate not in self._all_platez:
-				self._all_platez[plate] = 1
+			plate_text = plate[0]
+			plate_img = plate[1]
+			self._last_platez.append(plate_text)
+			if plate_text not in self._all_platez:
+				self._all_platez[plate_text] = Plate(plate_img)
 			else:
-				self._all_platez[plate] += 1
+				self._all_platez[plate_text].detections_cnt += 1
+				if self._save_images:
+					self._all_platez[plate_text].imgs.append(plate_img)
 
 
 	def make_clusters(self):
@@ -97,17 +107,26 @@ class Clusterer:
 		self._clusters = clusters
 
 
-	def dump_platez(self):
+	def dump_platez(self, print_strs=False):
 		"""
-		Prints all detected (unique) platez.
+		Saves all plate images to files (if save_images was set to True). Optionally also prints all plate strings.
+		print_strs: whether to print plate strings
 		"""
-		for plate in self._all_platez:
-			print(plate)
+		for plate_str, plate_data in self._all_platez.items():
+			if print_strs:
+				print(plate_str)
+
+			if self._save_images:
+				i = 1
+				for img in plate_data.imgs:
+					filename = "%s_%d.jpg" % (plate_str, i)
+					cv2.imwrite(filename, img)
+					i += 1
 
 
 	def dump_clusters(self, show_distances=False, show_exemplar=False):
 		"""
-		Prints clusters of platez.
+		Prints clusters of platez
 		show_distances: will display distance matrix if True
 		"""
 		for exemplar, cluster in self._clusters.items():
@@ -121,6 +140,6 @@ class Clusterer:
 					for plate2 in cluster:
 						dist = distance.levenshtein(plate2, plate)
 						distances += " %d" % dist
-					print("\t%dx %s: %s" % (self._all_platez[plate], plate, distances))
+					print("\t%dx %s: %s" % (self._all_platez[plate].detections_cnt, plate, distances))
 				else:
-					print("\t%dx %s" % (self._all_platez[plate], plate))
+					print("\t%dx %s" % (self._all_platez[plate].detections_cnt, plate))

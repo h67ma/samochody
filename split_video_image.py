@@ -113,8 +113,8 @@ def main():
     try:
         while(True):
             labels = []
-            platez = []
-            platez_strs = []
+            #platez = []
+            platez_for_clusterer = []
 
             img = img_queue.get()
 
@@ -135,8 +135,8 @@ def main():
                     lp_str = ocr(lp[0], ocr_net, ocr_meta, ocr_threshold)
                     if plate_legit(lp_str):
                         labels.append((Lcars[i], lp[1], lp_str))
-                        platez.append(Plate(lp[0], lp_str))
-                        platez_strs.append(lp_str)
+                        #platez.append(Plate(lp[0], lp_str))
+                        platez_for_clusterer.append((lp_str, lp[0]))
                     else:
                         labels.append((Lcars[i], lp[1], None))
 
@@ -144,7 +144,7 @@ def main():
             # TODO: timestamp
             frame_ready = generate_output(img, labels, timestamp_file)
             #debug_overlay.add_overlays(frame_ready, platez)
-            clusterer.add_platez(platez_strs)
+            clusterer.add_platez(platez_for_clusterer)
             dont += 1   
             if dont >= CLUSTER_EVERY_X_FRAMES:
                 clusterer.make_clusters()
