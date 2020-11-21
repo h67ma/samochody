@@ -89,28 +89,44 @@ def reconstruct(Iorig, I, Y, out_size, threshold=.9):
 
 			TLps.append(Ilp)
 	return final_labels, TLps
-	
 
-def detect_lp(model, I, max_dim, net_step, out_size, threshold):
-	hi = 0
+def detect_lp(model, Images, max_dims, net_step, out_size, threshold):
+	images_reformed = []
+	images_resized = []
+	for i in range(0, len(Images)):
+		I = Images[i]
+		min_dim_img = min(I.shape[:2])
+		factor = float(max_dims[i])/min_dim_img
 
-	min_dim_img = min(I.shape[:2])
-	factor = float(max_dim)/min_dim_img
+		# w,h = (np.array(I.shape[1::-1], dtype=float)*factor).astype(int).tolist()
+		# w += (w%net_step!=0)*(net_step - w%net_step)
+		# h += (h%net_step!=0)*(net_step - h%net_step)
+		w = 720
+		h = 480
+		Iresized = cv2.resize(I, (w, h))
 
-	w,h = (np.array(I.shape[1::-1], dtype=float)*factor).astype(int).tolist()
-	w += (w%net_step!=0)*(net_step - w%net_step)
-	h += (h%net_step!=0)*(net_step - h%net_step)
-	Iresized = cv2.resize(I, (w, h))
+		T = Iresized.copy()
+		# T = T.reshape((T.shape[0], T.shape[1], T.shape[2]))
 
-	T = Iresized.copy()
-	T = T.reshape((1, T.shape[0], T.shape[1], T.shape[2]))
+		images_reformed.append(T)
+		images_resized.append(Iresized)
 
 	start = time.time()
-	Yr = model.predict(T)
-	Yr = np.squeeze(Yr)
-	elapsed = time.time() - start
+	images_reformed = np.array(images_reformed)
+	print("shape = {}".format(images_reformed.shape))
+	predictions = model.predict(images_reformed, batch_size=len(Images))
 
-	L,TLps = reconstruct(I, Iresized, Yr, out_size, threshold)
+	ret = []
+	for i in range(0, len(predictions)):
+		Yr = np.squeeze(predictions[i])
+		elapsed = time.time() - start
 
-	return L,TLps,elapsed
+		L,TLps = reconstruct(Images[i], images_resized[i], Yr, out_size, threshold)
+		ret.append({
+			"Llp": L,
+			"LlpImgs": TLps,
+			"elapsed": elapsed,
+		})
+
+	return ret
 	

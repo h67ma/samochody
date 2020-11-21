@@ -62,6 +62,8 @@ def plate_legit(lp_str):
 
     return True
 
+def time_now_ms():
+    return int(round(time.time() * 1000))
 
 def main():
 
@@ -107,7 +109,7 @@ def main():
     #debug_overlay = DebugPlatezOverlay()
     clusterer = Clusterer()
     timestamp_file = open("timestamp.csv","a+")
-    i = 0
+    dont = 0
     try:
         while(True):
             labels = []
@@ -120,31 +122,34 @@ def main():
                 img, vehicle_net, vehicle_meta, vehicle_threshold
             )
 
-            for i, car_img in enumerate(Icars):
-                # LPD
-                lp_img, lp_label, ok = license_detection(car_img, wpod_net, lp_threshold)
-                if not ok:
-                    print("label not detected")
-                    labels.append((Lcars[i], None, None))
-                    continue
+            # LPD
+            if Icars:
+                license_plates = license_detection(Icars, wpod_net, lp_threshold)
                 # OCR
-                lp_str = ocr(lp_img, ocr_net, ocr_meta, ocr_threshold)
-                if plate_legit(lp_str):
-                    labels.append((Lcars[i], lp_label, lp_str))
-                    platez.append(Plate(lp_img, lp_str))
-                    platez_strs.append(lp_str)
-                else:
-                    labels.append((Lcars[i], lp_label, None))
+                for i in range(0, len(license_plates)):
+                    lp = license_plates[i]
+                    if not lp[2]:
+                        print("label not detected")
+                        labels.append((Lcars[i], None, None))
+                        continue
+                    lp_str = ocr(lp[0], ocr_net, ocr_meta, ocr_threshold)
+                    if plate_legit(lp_str):
+                        labels.append((Lcars[i], lp[1], lp_str))
+                        platez.append(Plate(lp[0], lp_str))
+                        platez_strs.append(lp_str)
+                    else:
+                        labels.append((Lcars[i], lp[1], None))
+
 
             # TODO: timestamp
             frame_ready = generate_output(img, labels, timestamp_file)
             #debug_overlay.add_overlays(frame_ready, platez)
             clusterer.add_platez(platez_strs)
-            i += 1
-            if i >= CLUSTER_EVERY_X_FRAMES:
+            dont += 1   
+            if dont >= CLUSTER_EVERY_X_FRAMES:
                 clusterer.make_clusters()
                 clusterer.dump_clusters()
-                i = 0
+                dont = 0
             display_queue.put(frame_ready)
     except KeyboardInterrupt:
         pass
