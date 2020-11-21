@@ -101,8 +101,8 @@ def detect_lp(model, Images, max_dims, net_step, out_size, threshold):
 		# w,h = (np.array(I.shape[1::-1], dtype=float)*factor).astype(int).tolist()
 		# w += (w%net_step!=0)*(net_step - w%net_step)
 		# h += (h%net_step!=0)*(net_step - h%net_step)
-		w = 720
-		h = 480
+		w = 320
+		h = 160
 		Iresized = cv2.resize(I, (w, h))
 
 		T = Iresized.copy()
