@@ -146,20 +146,21 @@ class Clusterer:
 
 	def dump_clusters(self, show_distances=False, show_exemplar=False):
 		"""
-		Prints clusters of platez
+		Saves clusters of platez to a file.
 		show_distances: will display distance matrix if True
 		"""
-		for exemplar, cluster in self._clusters.items():
-			if show_exemplar:
-				print(exemplar + ":")
-			else:
-				print("======================")
-			for plate in cluster:
-				if show_distances:
-					distances = ""
-					for plate2 in cluster:
-						dist = distance.levenshtein(plate2, plate)
-						distances += " %d" % dist
-					print("\t%dx %s: %s" % (self._all_platez[plate].detections_cnt, plate, distances))
+		with open("clusters.log", "w") as f:
+			for exemplar, cluster in self._clusters.items():
+				if show_exemplar:
+					f.write(exemplar + ":\n")
 				else:
-					print("\t%dx %s" % (self._all_platez[plate].detections_cnt, plate))
+					f.write("======================\n")
+				for plate in cluster:
+					if show_distances:
+						distances = ""
+						for plate2 in cluster:
+							dist = distance.levenshtein(plate2, plate)
+							distances += " %d" % dist
+						f.write("\t%dx %s: %s\n" % (self._all_platez[plate].detections_cnt, plate, distances))
+					else:
+						f.write("\t%dx %s\n" % (self._all_platez[plate].detections_cnt, plate))
