@@ -72,7 +72,7 @@ class Clusterer:
 		print_best_cluster: if True, will also print a sample from corresponding cluster
 			with the largest amount of detections (most probable "real" plate)
 		"""
-		self._last_platez_to_display.clear()
+		self._last_platez_to_display = []
 		if print_best_cluster_sample:
 			self._last_platez_to_display.append("recently detected platez (more recent at the end) (best cluster sample in brackets):")
 		else:
