@@ -145,12 +145,14 @@ def main():
             frame_ready = generate_output(img, labels, timestamp_file)
             #debug_overlay.add_overlays(frame_ready, platez)
             clusterer.add_platez(platez_for_clusterer)
-            dont += 1   
+            dont += 1
             if dont >= CLUSTER_EVERY_X_FRAMES:
                 clusterer.make_clusters()
+                clusterer.make_last_detections()
                 clusterer.dump_clusters()
-                clusterer.dump_last_detections()
+                clusterer.dump_platez()
                 dont = 0
+            clusterer.overlay_last_detections(img)
             display_queue.put(frame_ready)
     except KeyboardInterrupt:
         pass

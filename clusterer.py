@@ -2,6 +2,9 @@ import numpy
 from sklearn.cluster import AffinityPropagation
 import distance
 import cv2
+import os
+from datetime import datetime
+from src.drawing_utils import put_text
 from Queue import deque
 
 MAX_DISTANCE_INSIDE_CLUSTER = 3
@@ -23,6 +26,7 @@ class Clusterer:
 		self._all_platez = {} # {"plate txt": Plate, ...}
 		self._clusters = {} # {"exemplar": ["plate 1", "plate 2", ...], ...}
 		self._last_platez = deque(maxlen=DISP_LAST_CNT)
+		self._last_platez_str = ""
 		self._save_images = save_images
 
 
@@ -53,21 +57,28 @@ class Clusterer:
 		return max(couts_dict, key=couts_dict.get)
 
 
-	def dump_last_detections(self, print_best_cluster_sample=True):
+	def overlay_last_detections(self, img):
 		"""
-		Prints last DISP_LAST_CNT platez that were added to Clusterer.
+		adds all current overlays to img
+		"""
+		put_text(img, self._last_platez_str, 0, 30)
+
+
+	def make_last_detections(self, print_best_cluster_sample=True):
+		"""
+		Prepares last DISP_LAST_CNT platez that were added to Clusterer to display later.
 		print_best_cluster: if True, will also print a sample from corresponding cluster
 			with the largest amount of detections (most probable "real" plate)
 		"""
 		if print_best_cluster_sample:
-			print("recently detected platez (more recent at the end) (best cluster sample in brackets):")
+			self._last_platez_str = "recently detected platez (more recent at the end) (best cluster sample in brackets):"
 		else:
-			print("recently detected platez (more recent at the end):")
+			self._last_platez_str = "recently detected platez (more recent at the end):"
 		for detected_plate in self._last_platez:
 			if print_best_cluster_sample:
-				print("%s (%s)" % (detected_plate, self._find_best_cluster_plate_in_all_clusters(detected_plate)))
+				self._last_platez_str += "%s (%s)\n" % (detected_plate, self._find_best_cluster_plate_in_all_clusters(detected_plate))
 			else:
-				print(detected_plate)
+				self._last_platez_str += "%s\n" % detected_plate
 
 
 	def add_platez(self, platez):
@@ -112,6 +123,10 @@ class Clusterer:
 		Saves all plate images to files (if save_images was set to True). Optionally also prints all plate strings.
 		print_strs: whether to print plate strings
 		"""
+		logdir_name = "clusterlogs"
+		os.makedirs(logdir_name, exist_ok=True)
+		dir_name = os.path.join(logdir_name, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+		os.makedirs(dir_name, exist_ok=True)
 		for plate_str, plate_data in self._all_platez.items():
 			if print_strs:
 				print(plate_str)
@@ -119,7 +134,7 @@ class Clusterer:
 			if self._save_images:
 				i = 1
 				for img in plate_data.imgs:
-					filename = "%s_%d.jpg" % (plate_str, i)
+					filename = os.path.join(dir_name, "%s_%d.jpg" % (plate_str, i))
 					cv2.imwrite(filename, img)
 					i += 1
 
