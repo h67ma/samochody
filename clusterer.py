@@ -123,10 +123,9 @@ class Clusterer:
 		Saves all plate images to files (if save_images was set to True). Optionally also prints all plate strings.
 		print_strs: whether to print plate strings
 		"""
-		logdir_name = "clusterlogs"
-		os.makedirs(logdir_name, exist_ok=True)
-		dir_name = os.path.join(logdir_name, datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-		os.makedirs(dir_name, exist_ok=True)
+		dir_name = os.path.join("clusterlogs", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+		if not os.path.isdir(dir_name):
+			os.makedirs(dir_name)
 		for plate_str, plate_data in self._all_platez.items():
 			if print_strs:
 				print(plate_str)
