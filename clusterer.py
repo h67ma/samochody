@@ -3,18 +3,20 @@ from sklearn.cluster import AffinityPropagation
 import distance
 import cv2
 import os
-from datetime import datetime
-from src.drawing_utils import put_text
+import shutil
 from Queue import deque
+from src.drawing_utils import put_text
 
 MAX_DISTANCE_INSIDE_CLUSTER = 3
 DISP_LAST_CNT = 10
+MIN_OCC_LAST = 2
+LINE_HEIGHT = 35
 
 class Plate:
 	def __init__(self, first_img):
 		self.detections_cnt = 1
 		self.imgs = []
-		if first_img != None:
+		if first_img is not None:
 			self.imgs.append(first_img)
 
 
@@ -26,7 +28,7 @@ class Clusterer:
 		self._all_platez = {} # {"plate txt": Plate, ...}
 		self._clusters = {} # {"exemplar": ["plate 1", "plate 2", ...], ...}
 		self._last_platez = deque(maxlen=DISP_LAST_CNT)
-		self._last_platez_str = ""
+		self._last_platez_to_display = []
 		self._save_images = save_images
 
 
@@ -58,10 +60,10 @@ class Clusterer:
 
 
 	def overlay_last_detections(self, img):
-		"""
-		adds all current overlays to img
-		"""
-		put_text(img, self._last_platez_str, 0, 30)
+		yoffset = LINE_HEIGHT
+		for line in self._last_platez_to_display:
+			put_text(img, line, 0, yoffset)
+			yoffset += LINE_HEIGHT
 
 
 	def make_last_detections(self, print_best_cluster_sample=True):
@@ -70,15 +72,16 @@ class Clusterer:
 		print_best_cluster: if True, will also print a sample from corresponding cluster
 			with the largest amount of detections (most probable "real" plate)
 		"""
+		self._last_platez_to_display.clear()
 		if print_best_cluster_sample:
-			self._last_platez_str = "recently detected platez (more recent at the end) (best cluster sample in brackets):"
+			self._last_platez_to_display.append("recently detected platez (more recent at the end) (best cluster sample in brackets):")
 		else:
-			self._last_platez_str = "recently detected platez (more recent at the end):"
+			self._last_platez_to_display.append("recently detected platez (more recent at the end):")
 		for detected_plate in self._last_platez:
 			if print_best_cluster_sample:
-				self._last_platez_str += "%s (%s)\n" % (detected_plate, self._find_best_cluster_plate_in_all_clusters(detected_plate))
+				self._last_platez_to_display.append("%s (%s)" % (detected_plate, self._find_best_cluster_plate_in_all_clusters(detected_plate)))
 			else:
-				self._last_platez_str += "%s\n" % detected_plate
+				self._last_platez_to_display.append(detected_plate)
 
 
 	def add_platez(self, platez):
@@ -89,13 +92,17 @@ class Clusterer:
 		for plate in platez:
 			plate_text = plate[0]
 			plate_img = plate[1]
-			self._last_platez.append(plate_text)
+
 			if plate_text not in self._all_platez:
 				self._all_platez[plate_text] = Plate(plate_img)
 			else:
 				self._all_platez[plate_text].detections_cnt += 1
+
 				if self._save_images:
 					self._all_platez[plate_text].imgs.append(plate_img)
+
+				if self._all_platez[plate_text].detections_cnt >= MIN_OCC_LAST:
+					self._last_platez.append(plate_text)
 
 
 	def make_clusters(self):
@@ -118,24 +125,23 @@ class Clusterer:
 		self._clusters = clusters
 
 
-	def dump_platez(self, print_strs=False):
+	def dump_platez_imgs(self):
 		"""
 		Saves all plate images to files (if save_images was set to True). Optionally also prints all plate strings.
 		print_strs: whether to print plate strings
 		"""
-		dir_name = os.path.join("clusterlogs", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-		if not os.path.isdir(dir_name):
-			os.makedirs(dir_name)
+		if not self._save_images:
+			return
+		dir_name = "clusterlogs"
+		if os.path.isdir(dir_name):
+			shutil.rmtree(dir_name)
+		os.makedirs(dir_name)
 		for plate_str, plate_data in self._all_platez.items():
-			if print_strs:
-				print(plate_str)
-
-			if self._save_images:
-				i = 1
-				for img in plate_data.imgs:
-					filename = os.path.join(dir_name, "%s_%d.jpg" % (plate_str, i))
-					cv2.imwrite(filename, img)
-					i += 1
+			i = 1
+			for img in plate_data.imgs:
+				filename = os.path.join(dir_name, "%s_%d.jpg" % (plate_str, i))
+				cv2.imwrite(filename, img)
+				i += 1
 
 
 	def dump_clusters(self, show_distances=False, show_exemplar=False):

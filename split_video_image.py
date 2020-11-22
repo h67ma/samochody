@@ -107,7 +107,7 @@ def main():
     wpod_net = load_model(wpod_net_path)
 
     #debug_overlay = DebugPlatezOverlay()
-    clusterer = Clusterer()
+    clusterer = Clusterer(save_images=True)
     timestamp_file = open("timestamp.csv","a+")
     dont = 0
     try:
@@ -150,7 +150,7 @@ def main():
                 clusterer.make_clusters()
                 clusterer.make_last_detections()
                 clusterer.dump_clusters()
-                clusterer.dump_platez()
+                clusterer.dump_platez_imgs()
                 dont = 0
             clusterer.overlay_last_detections(img)
             display_queue.put(frame_ready)
