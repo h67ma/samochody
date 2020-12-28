@@ -67,15 +67,30 @@ def time_now_ms():
 
 def main():
 
+    from_file = False
+    if len(sys.argv) > 1:
+        from_file = True
+        in_filename = sys.argv[1]
 
-    img_queue = DiscardQueue(QUEUE_SIZE)
-    display_queue = queue.Queue()
-    end_event = threading.Event()
-    vs = WebcamVideoStream(src=0).start()
+        vs = cv2.VideoCapture(in_filename)
 
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
-    executor.submit(produce_frame, vs, img_queue, end_event)
-    executor.submit(display_frame, display_queue, end_event)
+        fps = vs.get(5)
+        width = vs.get(3)
+        height = vs.get(4)
+        print("fps=%f\nw=%d\nh=%d" % (fps, width, height))
+        
+        video_writer = cv2.VideoWriter(in_filename + "_out.mp4",
+            cv2.VideoWriter_fourcc(*"mp4v"),
+            fps, (int(width), int(height)))
+    else:
+        vs = WebcamVideoStream(src=0).start()
+        img_queue = DiscardQueue(QUEUE_SIZE)
+        display_queue = queue.Queue()
+        end_event = threading.Event()
+
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        executor.submit(produce_frame, vs, img_queue, end_event)
+        executor.submit(display_frame, display_queue, end_event)
 
     start_time = time.time()
     #timestamp_file = "%s_timestamps.csv" % (in_video.split(".")[0])
@@ -112,11 +127,16 @@ def main():
     dont = 0
     try:
         while(True):
+            if from_file:
+                _, img = vs.read()
+                if img is None:
+                    break
+            else:
+                img = img_queue.get()
+
             labels = []
             #platez = []
             platez_for_clusterer = []
-
-            img = img_queue.get()
 
             Icars, Lcars = vehicle_detect(
                 img, vehicle_net, vehicle_meta, vehicle_threshold
@@ -153,14 +173,18 @@ def main():
                 clusterer.dump_platez_imgs()
                 dont = 0
             clusterer.overlay_last_detections(img)
-            display_queue.put(frame_ready)
+            if from_file:
+                video_writer.write(frame_ready)
+            else:
+                display_queue.put(frame_ready)
     except KeyboardInterrupt:
         pass
 
-    end_event.set() # finish
-    executor.shutdown(wait=False)
-    cv2.destroyAllWindows()
-    vs.stop()
+    if not from_file:
+        end_event.set() # finish
+        executor.shutdown(wait=False)
+        cv2.destroyAllWindows()
+        vs.stop()
     timestamp_file.close()
 
     print("Execution time: %fs" % (time.time() - start_time))
